@@ -1,0 +1,2014 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-hairline: var(--hairline);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-fraunces);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-heading: var(--font-montserrat);
+  --font-display: var(--font-montserrat);
+  --font-inter: "Inter", "Inter Fallback";
+  --font-fraunces: "Fraunces", "Fraunces Fallback";
+  --font-jetbrains-mono: "JetBrains Mono", "JetBrains Mono Fallback";
+  --font-montserrat: "Montserrat", "Montserrat Fallback";
+  --default-font-family: var(--font-inter);
+  --default-serif-font-family: var(--font-fraunces);
+  --default-mono-font-family: var(--font-jetbrains-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  /* Round 8: traffic-light connection-status colors */
+  --color-status-online: var(--status-online);
+  --color-status-pending: var(--status-pending);
+  --color-status-offline: var(--status-offline);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-action: var(--action);
+  --color-link: var(--link);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ─── Light theme ─────────────────────────────────────────────────────────── */
+:root {
+  /* Editorial canvas — cream paper + ink, single accent (Tailwind red-600).
+     The --background / --foreground below stay semantic (used by shadcn)
+     and now map to the paper / ink palette. */
+  --background: oklch(0.985 0.005 80);
+  --foreground: oklch(0.18 0.01 260);
+
+  --paper: oklch(0.985 0.005 80);
+  --ink: var(--color-black);
+  /* Round 9 — softened hairline so card borders read as whispers, not rules.
+     The previous oklch(0.86) was a hard 1px line on every card edge, which
+     made the editorial palette feel rigid. Now closer to paper so borders
+     almost disappear; depth is carried by the new .lift-* shadow utilities. */
+  --hairline: oklch(0.91 0.004 80);
+  /* New — softer inner divider used inside cards/tables (rows, list items).
+     Hairline is for structural edges; this is for sub-divisions. */
+  --hairline-soft: oklch(0.93 0.003 80);
+
+  /* Round 9 — warm shadow tints. Two-stop shadows give the editorial cards
+     the soft "paper floating above paper" look the user asked for without
+     abandoning the flat editorial palette. */
+  --shadow-card: 0 1px 2px oklch(0.18 0.01 260 / 0.04), 0 4px 14px oklch(0.18 0.01 260 / 0.05);
+  --shadow-card-hover: 0 2px 4px oklch(0.18 0.01 260 / 0.06), 0 14px 32px oklch(0.18 0.01 260 / 0.08);
+  --shadow-panel: 0 1px 2px oklch(0.18 0.01 260 / 0.04), 0 8px 24px oklch(0.18 0.01 260 / 0.06);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.01 260);
+
+  --popover: oklch(0.99 0.002 240 / 0.9);
+  --popover-foreground: oklch(0.14 0.015 260);
+
+  --primary: var(--color-red-600);
+  --action: var(--color-red-800);
+  --link: var(--color-red-700);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.96 0.005 240);
+  --secondary-foreground: oklch(0.38 0.015 260);
+
+  --muted: oklch(0.94 0.005 240);
+  --muted-foreground: oklch(0.48 0.012 260);
+
+  --accent: oklch(0.93 0.008 250);
+  --accent-foreground: oklch(0.14 0.015 260);
+
+  /* Colorblind-safe status palette (Okabe-Ito adapted).
+     - destructive uses magenta (h≈340°) instead of red — distinguishable from
+       amber/orange for protanopia/deuteranopia.
+     - success uses teal (h≈175°) — distinct from the red brand accent.
+     - warning uses amber (h≈80°) — clearly distinct from green and blue.
+     All four hues differ by ≥60° and have different lightness, so they remain
+     distinguishable under red-green color vision deficiency. */
+  --destructive: oklch(0.55 0.22 340);
+  --success: oklch(0.55 0.14 175);
+  --warning: oklch(0.72 0.16 80);
+  --info: oklch(0.58 0.14 220);
+
+  /* Round 8: explicit traffic-light overrides for the connection-status
+     indicators on the dashboard. The user explicitly requested a saturated
+     green/yellow/red semantic for "aktif / pending / tidak konek" — these
+     three colors are reserved for that one component family so the rest of
+     the editorial palette (Okabe-Ito) keeps its colorblind-safe properties. */
+  --status-online:  oklch(0.62 0.22 145);
+  --status-pending: oklch(0.78 0.18 80);
+  --status-offline: oklch(0.60 0.22 25);
+
+  --border: oklch(0.88 0.01 240 / 0.7);
+  --input: oklch(0.90 0.008 240);
+  --ring: var(--primary);
+
+  /* CB-safe 5-color chart set:
+     sky (210°), red (27°), orange (50°), teal (175°), magenta (340°) */
+  --chart-1: oklch(0.62 0.14 210);
+  --chart-2: var(--primary);
+  --chart-3: oklch(0.70 0.16 50);
+  --chart-4: oklch(0.58 0.14 175);
+  --chart-5: oklch(0.58 0.20 340);
+
+  --radius: 0.75rem;
+
+  --sidebar: oklch(0.97 0.003 240 / 0.95);
+  --sidebar-foreground: oklch(0.14 0.015 260);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.90 0.01 250 / 0.45);
+  --sidebar-accent-foreground: var(--primary);
+  --sidebar-border: oklch(0.85 0.012 240 / 0.55);
+  --sidebar-ring: var(--primary);
+}
+
+/* ─── Dark theme ─────────────────────────────────────────────────────────── */
+.dark {
+  --background: oklch(0.16 0.008 260);
+  --foreground: oklch(0.96 0.004 80);
+
+  /* Editorial canvas — inverted: dark paper + light ink */
+  --paper: oklch(0.16 0.008 260);
+  --ink: oklch(0.96 0.004 80);
+  --hairline: oklch(0.28 0.008 260);
+  --hairline-soft: oklch(0.24 0.008 260);
+
+  /* Round 9 — soft shadows in dark mode. Same shape, slightly stronger
+     alpha so they read against the deep paper. */
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.25), 0 6px 18px oklch(0 0 0 / 0.30);
+  --shadow-card-hover: 0 2px 4px oklch(0 0 0 / 0.30), 0 16px 36px oklch(0 0 0 / 0.40);
+  --shadow-panel: 0 1px 2px oklch(0 0 0 / 0.30), 0 10px 28px oklch(0 0 0 / 0.35);
+
+  --card: oklch(0.18 0.010 260);
+  --card-foreground: oklch(0.96 0.004 80);
+
+  --popover: oklch(0.13 0.016 250 / 0.9);
+  --popover-foreground: oklch(0.96 0 0);
+
+  --primary: var(--color-red-600);
+  --link: var(--color-red-300);
+  --primary-foreground: var(--color-white);
+
+  --secondary: oklch(0.22 0.015 250);
+  --secondary-foreground: oklch(0.88 0 0);
+
+  --muted: oklch(0.20 0.014 250);
+  --muted-foreground: oklch(0.62 0.01 250);
+
+  --accent: oklch(0.22 0.015 250);
+  --accent-foreground: oklch(0.88 0 0);
+
+  /* Dark theme CB-safe status palette (slightly higher chroma & lightness
+     for sufficient contrast on dark backgrounds) */
+  --destructive: oklch(0.70 0.22 340);
+  --success: oklch(0.72 0.15 175);
+  --warning: oklch(0.80 0.16 80);
+  --info: oklch(0.75 0.14 220);
+
+  /* Round 8: connection-status traffic-light tokens for dark theme */
+  --status-online:  oklch(0.72 0.22 145);
+  --status-pending: oklch(0.85 0.18 80);
+  --status-offline: oklch(0.70 0.22 25);
+
+  --border: oklch(0.24 0.014 250 / 0.65);
+  --input: oklch(0.24 0.014 250);
+  --ring: var(--primary);
+
+  --chart-1: oklch(0.72 0.14 210);
+  --chart-2: var(--primary);
+  --chart-3: oklch(0.78 0.15 50);
+  --chart-4: oklch(0.74 0.14 175);
+  --chart-5: oklch(0.72 0.20 340);
+
+  --sidebar: oklch(0.10 0.016 250 / 0.95);
+  --sidebar-foreground: oklch(0.96 0 0);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--color-white);
+  --sidebar-accent: oklch(0.20 0.014 250 / 0.55);
+  --sidebar-accent-foreground: var(--primary);
+  --sidebar-border: oklch(0.24 0.014 250 / 0.55);
+  --sidebar-ring: var(--primary);
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  html {
+    @apply scroll-smooth;
+  }
+}
+
+/* ─── Smooth transitions for all interactive elements ────────────────────── */
+@layer utilities {
+  /* Hover lift — cards, buttons, items */
+  .hover-lift {
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 200ms ease-out,
+                border-color 200ms ease-out,
+                background 200ms ease-out;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px oklch(0 0 0 / 0.08), 0 2px 6px oklch(0 0 0 / 0.04);
+  }
+  .hover-lift:active {
+    transform: translateY(0px) scale(0.99);
+    transition-duration: 80ms;
+  }
+
+  /* Glass card — elevated surface with entrance + interactive states.
+     Higher opacity so floating panels read as solid surfaces over the page. */
+  .glass-card {
+    position: relative;
+    background: oklch(0.98 0.003 240 / 0.94);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid oklch(0.88 0.01 240 / 0.5);
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 6px 16px oklch(0 0 0 / 0.07);
+    transition:
+      transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 280ms ease-out,
+      background 280ms ease-out;
+    will-change: transform, box-shadow;
+  }
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      oklch(1 0 0 / 0.6) 0%,
+      transparent 30%,
+      transparent 70%,
+      color-mix(in oklch, var(--primary) 18%, transparent) 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 400ms ease-out;
+  }
+  .glass-card:hover {
+    transform: translateY(-2px) scale(1.005);
+    box-shadow:
+      0 14px 32px oklch(0 0 0 / 0.12),
+      0 6px 10px oklch(0 0 0 / 0.06);
+    border-color: oklch(0.82 0.012 240 / 0.75);
+    background: oklch(0.99 0.003 240 / 0.96);
+  }
+  .glass-card:hover::before {
+    opacity: 1;
+  }
+  .glass-card:active {
+    transform: translateY(0) scale(0.998);
+    transition-duration: 120ms;
+  }
+  .glass-card-interactive {
+    cursor: pointer;
+  }
+  .dark .glass-card {
+    background: oklch(0.14 0.016 250 / 0.94);
+    border-color: oklch(0.26 0.016 250 / 0.5);
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.25), 0 6px 16px oklch(0 0 0 / 0.3);
+  }
+  .dark .glass-card:hover {
+    border-color: oklch(0.36 0.014 250 / 0.7);
+    background: oklch(0.16 0.018 250 / 0.88);
+    box-shadow:
+      0 12px 28px oklch(0 0 0 / 0.3),
+      0 4px 8px oklch(0 0 0 / 0.2);
+  }
+
+  /* Notification panel — frosted glass, lightweight blur for GPU perf.
+     Used by dialog content + popovers + dropdowns so they all share one look.
+     Higher opacity so the panel reads as a solid surface over the page. */
+  .notif-panel {
+    background: oklch(0.99 0.002 240 / 0.94);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid oklch(0.85 0.012 240 / 0.7);
+    box-shadow:
+      0 20px 48px oklch(0 0 0 / 0.22),
+      0 6px 14px oklch(0 0 0 / 0.1),
+      inset 0 1px 0 oklch(1 0 0 / 0.55);
+  }
+  .notif-panel:hover {
+    box-shadow:
+      0 24px 56px oklch(0 0 0 / 0.26),
+      0 8px 18px oklch(0 0 0 / 0.12),
+      inset 0 1px 0 oklch(1 0 0 / 0.55);
+  }
+  .dark .notif-panel {
+    background: oklch(0.13 0.018 250 / 0.94);
+    border-color: oklch(0.30 0.014 250 / 0.7);
+    box-shadow:
+      0 20px 48px oklch(0 0 0 / 0.55),
+      0 6px 14px oklch(0 0 0 / 0.3),
+      inset 0 1px 0 oklch(1 0 0 / 0.08);
+  }
+
+  /* Notification panel — slightly heavier blur for pickers that float over busy content */
+  .notif-panel-strong {
+    background: oklch(0.99 0.002 240 / 0.9);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid oklch(0.82 0.012 240 / 0.72);
+    box-shadow:
+      0 24px 56px oklch(0 0 0 / 0.24),
+      0 8px 18px oklch(0 0 0 / 0.1),
+      inset 0 1px 0 oklch(1 0 0 / 0.6);
+  }
+  .dark .notif-panel-strong {
+    background: oklch(0.12 0.018 250 / 0.9);
+    border-color: oklch(0.32 0.014 250 / 0.72);
+    box-shadow:
+      0 24px 56px oklch(0 0 0 / 0.6),
+      0 8px 18px oklch(0 0 0 / 0.32),
+      inset 0 1px 0 oklch(1 0 0 / 0.1);
+  }
+
+  /* Glass sidebar — single soft outline (base-ui floating variant already
+     provides ring-1 ring-sidebar-border, so we only set bg + shadow + radius) */
+  [data-sidebar="sidebar"] {
+    background: oklch(0.98 0.003 240 / 0.94);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    box-shadow: 0 6px 16px oklch(0 0 0 / 0.06);
+  }
+  .dark [data-sidebar="sidebar"] {
+    background: oklch(0.14 0.016 250 / 0.94);
+    box-shadow: 0 6px 16px oklch(0 0 0 / 0.3);
+  }
+  /* Legacy class — single outline only (matches base-ui floating ring) */
+  .glass-sidebar {
+    background: oklch(0.98 0.003 240 / 0.94);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border-radius: 1.25rem;
+    box-shadow: 0 6px 16px oklch(0 0 0 / 0.06);
+  }
+  .dark .glass-sidebar {
+    background: oklch(0.14 0.016 250 / 0.94);
+    box-shadow: 0 6px 16px oklch(0 0 0 / 0.3);
+  }
+
+  /* Glass header — full-width top bar, no inner highlight to avoid double line */
+  .glass-header {
+    background: oklch(0.98 0.003 240 / 0.94);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border-bottom: 1px solid oklch(0.86 0.01 240 / 0.45);
+    box-shadow: 0 1px 3px oklch(0 0 0 / 0.04);
+  }
+  .dark .glass-header {
+    background: oklch(0.14 0.016 250 / 0.94);
+    border-color: oklch(0.26 0.014 250 / 0.45);
+    box-shadow: 0 1px 3px oklch(0 0 0 / 0.25);
+  }
+
+  /* Hairline dividers */
+  .hairline-top {
+    border-top: 1px solid oklch(0.88 0.01 240 / 0.45);
+  }
+  .hairline-bottom {
+    border-bottom: 1px solid oklch(0.88 0.01 240 / 0.45);
+  }
+
+  /* ─── Editorial design system utilities ────────────────────────────────
+     Used by landing, login, register, sidebar, header (Phase 1) and dashboard
+     internals (Phase 2). Each utility is paper-only — no glass, no shadow,
+     no rounded corners larger than 2px. Editorial = flat, type-driven. */
+
+  /* Eyebrow caps — small uppercase label above headlines. Tracking 0.18em. */
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.6875rem;            /* 11px */
+    font-weight: 600;
+    color: var(--muted-foreground);
+  }
+  .eyebrow-sm {
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.625rem;             /* 10px */
+    font-weight: 700;
+    color: var(--muted-foreground);
+  }
+
+  /* Display headlines — serif, tight tracking, used for H1/H2 in editorial sections. */
+  .display {
+    font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 0.95;
+  }
+  .display-italic {
+    font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+  }
+
+  /* Display headlines — heavy grotesque sans (Montserrat) for SAIC-pattern
+     institutional + section titles. Uppercase by default. Tight tracking.
+     Pair with Fraunces italic for accent lines and pull quotes. */
+  .display-sans {
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 0.92;
+    text-transform: none;
+  }
+  .display-sans-uc {
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 0.92;
+    text-transform: uppercase;
+  }
+  .display-sans-black {
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    line-height: 0.88;
+  }
+
+  /* Editorial panel — flat surface that flows into section tints, no border.
+     Content area uses bg-ink/[0.03] to distinguish from section tint.
+     Use background-color so bg-paper utility can override it. */
+  .editorial-panel {
+    background-color: var(--paper);
+    border-radius: 2px;
+  }
+
+  /* Round 9 — surface lifts. Three tiers of "paper floating above paper" so
+     cards stop looking flat against the page bg. L1 = small lift (chart
+     cards, panels), L2 = stronger (notification popover, dialogs),
+     L3 = floating controls. All use the warm shadow tokens above so they
+     stay editorial — no glass, no backdrop-blur, no rounding > 2px. */
+  .lift-1 {
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 200ms ease-out, transform 200ms ease-out;
+  }
+  .lift-1:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+  .lift-2 {
+    box-shadow: var(--shadow-panel);
+  }
+  .lift-3 {
+    box-shadow:
+      0 1px 2px oklch(0.18 0.01 260 / 0.06),
+      0 14px 36px oklch(0.18 0.01 260 / 0.10),
+      0 32px 64px oklch(0.18 0.01 260 / 0.06);
+  }
+  .dark .lift-1 { box-shadow: var(--shadow-card); }
+  .dark .lift-1:hover { box-shadow: var(--shadow-card-hover); }
+  .dark .lift-2 { box-shadow: var(--shadow-panel); }
+  .dark .lift-3 {
+    box-shadow:
+      0 1px 2px oklch(0 0 0 / 0.30),
+      0 14px 36px oklch(0 0 0 / 0.45),
+      0 32px 64px oklch(0 0 0 / 0.35);
+  }
+
+  /* Round 9 — soft inner divider for table rows, list items, sub-sections.
+     Hairline is for structural edges; this is for quieter divisions. */
+  .divider-soft {
+    border-color: var(--hairline-soft);
+  }
+
+  /* Round 9 — hover row tint (table rows, list items). Slightly warmer than
+     bg-ink/[0.02] so the hover state reads without the line shift. */
+  .row-hover { transition: background 140ms ease-out; }
+  .row-hover:hover { background: oklch(0.92 0.005 80 / 0.55); }
+  .dark .row-hover:hover { background: oklch(0.20 0.012 260 / 0.65); }
+
+  /* Hairline rule — single 1px line in the editorial palette. */
+  .rule {
+    height: 1px;
+    background: var(--hairline);
+  }
+  .rule-accent {
+    height: 1px;
+    background: var(--primary);
+  }
+
+  /* Editorial input — bottom-border only, no fill, no rounding. */
+  .editorial-input {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--hairline);
+    border-radius: 0;
+    padding: 0.5rem 0;
+    width: 100%;
+    color: var(--ink);
+    font-size: 0.9375rem;             /* 15px */
+    transition: border-color 200ms ease-out, color 200ms ease-out;
+    outline: none;
+  }
+  .editorial-input::placeholder {
+    color: var(--muted-foreground);
+    opacity: 0.6;
+  }
+  .editorial-input:focus {
+    border-bottom-color: var(--ink);
+  }
+
+  /* Editorial CTA — solid single-accent button, no rounding > 2px. */
+  .editorial-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1.5rem;
+    background: var(--action);
+    color: var(--color-white);
+    border-radius: 2px;
+    font-size: 0.8125rem;             /* 13px */
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 200ms ease-out, transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .editorial-cta:hover {
+    background: var(--color-red-900);
+    color: var(--primary-foreground);
+    transform: translateY(-1px);
+  }
+  .editorial-cta:active {
+    transform: translateY(0);
+  }
+
+  /* Editorial ghost CTA — text + underline reveal. */
+  .editorial-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    color: var(--ink);
+    border-radius: 2px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    position: relative;
+    transition: color 200ms ease-out;
+  }
+  .editorial-ghost::after {
+    content: '';
+    position: absolute;
+    left: 1.5rem;
+    right: 1.5rem;
+    bottom: 0.75rem;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(1);
+    transform-origin: left;
+    transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .editorial-ghost:hover {
+    color: var(--ink);
+  }
+  .editorial-ghost:hover::after {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+  .editorial-ghost:hover::before {
+    content: '';
+    position: absolute;
+    left: 1.5rem;
+    right: 1.5rem;
+    bottom: 0.75rem;
+    height: 1px;
+    background: var(--primary);
+    animation: editorial-rule-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes editorial-rule-in {
+    from { transform: scaleX(0); transform-origin: left; }
+    to   { transform: scaleX(1); transform-origin: left; }
+  }
+
+  .dark .hairline-top, .dark .hairline-bottom {
+    border-color: oklch(0.24 0.014 250 / 0.45);
+  }
+
+  /* Separator gradient */
+  .separator-glass {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      oklch(0.80 0.015 240 / 0.35) 20%,
+      oklch(0.80 0.015 240 / 0.35) 80%,
+      transparent
+    );
+  }
+  .dark .separator-glass {
+    background: linear-gradient(
+      to right,
+      transparent,
+      oklch(0.24 0.014 250 / 0.35) 20%,
+      oklch(0.24 0.014 250 / 0.35) 80%,
+      transparent
+    );
+  }
+
+  /* Icon badge */
+  .icon-badge {
+    background: oklch(0.92 0.01 250 / 0.35);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid oklch(0.88 0.01 240 / 0.2);
+  }
+  .dark .icon-badge {
+    background: oklch(0.20 0.014 250 / 0.4);
+    border-color: oklch(0.24 0.014 250 / 0.2);
+  }
+
+  /* Action row — quick action button row */
+  .action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.625rem;
+    border: 1px solid transparent;
+    transition: background 150ms ease-out, border-color 150ms ease-out, transform 150ms ease-out;
+    cursor: pointer;
+  }
+  .action-row:hover {
+    background: oklch(0.93 0.008 250 / 0.5);
+    border-color: oklch(0.88 0.01 240 / 0.35);
+  }
+  .action-row:active {
+    transform: scale(0.99);
+    background: oklch(0.90 0.01 250 / 0.5);
+  }
+  .dark .action-row:hover {
+    background: oklch(0.20 0.014 250 / 0.55);
+    border-color: oklch(0.24 0.014 250 / 0.4);
+  }
+
+  /* Nav item */
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    height: 2.5rem;
+    padding: 0 0.625rem;
+    margin: 1px 0;
+    border-radius: 0.625rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: oklch(0.30 0.015 260);
+    transition: background 150ms ease-out, color 150ms ease-out, transform 100ms ease-out;
+    cursor: pointer;
+    user-select: none;
+  }
+  .nav-item .nav-icon-badge {
+    background: oklch(0.94 0.005 240);
+    color: oklch(0.45 0.018 260);
+    transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+  }
+  .nav-item:hover {
+    background: oklch(0.92 0.02 250 / 0.55);
+    color: oklch(0.14 0.015 260);
+  }
+  .nav-item:hover .nav-icon-badge {
+    transform: scale(1.05);
+  }
+  .nav-item:active {
+    transform: scale(0.97);
+  }
+  .nav-item.active {
+    background: transparent;
+    color: oklch(0.20 0.018 260);
+    font-weight: 600;
+  }
+  .nav-item.active .nav-icon-badge {
+    box-shadow: 0 0 0 2px color-mix(in oklch, var(--primary) 35%, transparent);
+  }
+  .dark .nav-item {
+    color: oklch(0.82 0.012 240);
+  }
+  .dark .nav-item .nav-icon {
+    color: oklch(0.70 0.015 240);
+  }
+  .dark .nav-item:hover {
+    background: oklch(0.22 0.018 250 / 0.7);
+    color: oklch(0.96 0 0);
+  }
+  .dark .nav-item:hover .nav-icon {
+    color: oklch(0.96 0 0);
+  }
+  .dark .nav-item.active {
+    background: color-mix(in oklch, var(--primary) 22%, transparent);
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--primary) 40%, transparent);
+  }
+  .dark .nav-item.active .nav-icon {
+    color: var(--ink);
+    filter: drop-shadow(0 0 8px color-mix(in oklch, var(--primary) 50%, transparent));
+  }
+
+  /* Sidebar staggered content animations */
+.sidebar-stagger {
+  opacity: 0;
+  transform: translateX(-6px);
+}
+[data-state="expanded"] .sidebar-stagger {
+  animation: sidebarExpandIn 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+[data-state="expanded"] .sidebar-stagger-1 { animation-delay: 200ms; }
+[data-state="expanded"] .sidebar-stagger-2 { animation-delay: 280ms; }
+[data-state="expanded"] .sidebar-stagger-3 { animation-delay: 360ms; }
+[data-state="expanded"] .sidebar-stagger-4 { animation-delay: 440ms; }
+
+[data-state="collapsed"] .sidebar-stagger {
+  animation: sidebarCollapseOut 160ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+@keyframes sidebarExpandIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes sidebarCollapseOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+}
+
+/* Sidebar width transition smoothness — overrides base transition */
+[data-sidebar="sidebar"] {
+  transition: width 360ms cubic-bezier(0.22, 1, 0.36, 1), left 360ms cubic-bezier(0.22, 1, 0.36, 1), right 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Pulse dot */
+  .pulse-dot {
+    position: relative;
+  }
+  .pulse-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes pulse-ring {
+    0%, 100% { opacity: 0; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.8); }
+  }
+}
+
+/* ─── Editorial Softened: gradient fills + warmer shadows ──────────────────── */
+
+/* Subtle gradient fills — used on MetricCard and GlassCard backgrounds.
+   Radial from top-left (natural light) so no diagonal line artifact.
+   Very low opacity so warmth reads as "lifted paper" not "tinted". */
+.gradient-card-fill {
+  background: radial-gradient(
+    ellipse 80% 60% at 10% 0%,
+    color-mix(in oklch, var(--primary) 1.8%, transparent) 0%,
+    transparent 100%
+  ),
+  oklch(0.985 0.005 80);
+}
+.dark .gradient-card-fill {
+  background: radial-gradient(
+    ellipse 80% 60% at 10% 0%,
+    color-mix(in oklch, var(--primary) 5%, transparent) 0%,
+    transparent 100%
+  ),
+  oklch(0.16 0.008 260);
+}
+
+/* Section card / GlassCard — slightly stronger radial warmth from top-left */
+.gradient-panel-fill {
+  background: radial-gradient(
+    ellipse 100% 80% at 5% 0%,
+    color-mix(in oklch, var(--primary) 2.2%, transparent) 0%,
+    transparent 100%
+  ),
+  oklch(0.985 0.005 80);
+}
+.dark .gradient-panel-fill {
+  background: radial-gradient(
+    ellipse 100% 80% at 5% 0%,
+    color-mix(in oklch, var(--primary) 4.5%, transparent) 0%,
+    transparent 100%
+  ),
+  oklch(0.16 0.008 260);
+}
+
+/* Warmer shadow for cards — slightly warmer tint than shadow-card */
+:root {
+  --shadow-warm: 0 2px 6px oklch(0.18 0.01 260 / 0.06), 0 10px 28px oklch(0.18 0.01 260 / 0.08);
+}
+.dark {
+  --shadow-warm: 0 2px 6px oklch(0 0 0 / 0.30), 0 10px 28px oklch(0 0 0 / 0.35);
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(0.70 0.01 250 / 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.60 0.015 250 / 0.45);
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: oklch(0.24 0.014 250 / 0.4);
+}
+
+/* ─── Focus ─────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--primary) 50%, transparent);
+  outline-offset: 2px;
+  border-radius: calc(var(--radius) * 0.5);
+}
+
+/* ─── Entrance animations ───────────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes glassEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-12deg);
+  }
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-8px) scaleY(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0) scaleY(1);
+  }
+}
+@keyframes notifPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 oklch(0.65 0.22 25 / 0.35), 0 1px 2px oklch(0 0 0 / 0.04);
+  }
+  50% {
+    box-shadow: 0 0 0 6px oklch(0.65 0.22 25 / 0), 0 1px 2px oklch(0 0 0 / 0.04);
+  }
+}
+@keyframes notifItemEnter {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes notifBadgeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes notifEmptyIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes notifBackdropIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+  }
+}
+@keyframes notifBackdropOut {
+  from {
+    opacity: 1;
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+  }
+  to {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+}
+.animate-fade-up {
+  animation: fadeSlideUp 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-glass-enter {
+  animation: glassEnter 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── Cycle-fade: gentian teks/font pada hero h1 ────────────────────── */
+@keyframes cycleFade {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+    filter: blur(2px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+.animate-cycle-fade {
+  animation: cycleFade 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The language label sits inside the title's fixed padding, never adds a line box. */
+.cycle-imato {
+  color: var(--ink);
+}
+.cycle-imato-label-slot,
+.cycle-imato-label {
+  position: absolute;
+  bottom: 0.25rem;
+  left: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(0.7rem, 1vw, 0.95rem);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  user-select: none;
+  pointer-events: none;
+}
+.cycle-imato-label-slot {
+  visibility: hidden;
+}
+.cycle-imato-label {
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(4px);
+  animation: cycleImatoLabel 420ms cubic-bezier(0.22, 1, 0.36, 1) 520ms forwards;
+}
+@keyframes cycleImatoLabel {
+  to {
+    opacity: 0.85;
+    transform: translateY(0);
+  }
+}
+
+/* Scroll-triggered entrance — toggled by useInView hook.
+   Plays once on first intersection, then stays settled. */
+.in-view {
+  animation: fadeSlideUp 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Respect user motion preferences — skip the entrance entirely. */
+@media (prefers-reduced-motion: reduce) {
+  .in-view,
+  .animate-fade-up,
+  .animate-glass-enter,
+  .animate-cycle-fade,
+  .cycle-imato-label {
+    animation: none !important;
+  }
+  .cycle-imato-label {
+    opacity: 0.85 !important;
+    transform: none !important;
+  }
+}
+
+/* ─── Colorblind-safe semantic surfaces (light + dark) ──────────────── */
+@layer utilities {
+  /* Soft backgrounds for status badges / notices.
+     Use the same hue family as --success/--warning/--destructive but at
+     low chroma so they read as "tinted background", not as full saturation. */
+  .bg-success-soft {
+    background: oklch(0.95 0.04 175);
+  }
+  .dark .bg-success-soft {
+    background: oklch(0.24 0.05 175);
+  }
+  .text-success {
+    color: oklch(0.45 0.14 175);
+  }
+  .dark .text-success {
+    color: oklch(0.78 0.15 175);
+  }
+  .border-success-soft {
+    border-color: oklch(0.85 0.06 175);
+  }
+  .dark .border-success-soft {
+    border-color: oklch(0.32 0.06 175);
+  }
+
+  .bg-warning-soft {
+    background: oklch(0.95 0.05 80);
+  }
+  .dark .bg-warning-soft {
+    background: oklch(0.28 0.06 80);
+  }
+  .text-warning {
+    color: oklch(0.45 0.16 80);
+  }
+  .dark .text-warning {
+    color: oklch(0.82 0.15 80);
+  }
+  .border-warning-soft {
+    border-color: oklch(0.85 0.08 80);
+  }
+  .dark .border-warning-soft {
+    border-color: oklch(0.38 0.08 80);
+  }
+
+  /* "danger" — uses magenta (h≈340°) for colorblind safety, distinct from
+     primary red and warning amber. */
+  .bg-danger-soft {
+    background: oklch(0.95 0.04 340);
+  }
+  .dark .bg-danger-soft {
+    background: oklch(0.26 0.06 340);
+  }
+  .text-danger {
+    color: oklch(0.48 0.20 340);
+  }
+  .dark .text-danger {
+    color: oklch(0.78 0.18 340);
+  }
+  .border-danger-soft {
+    border-color: oklch(0.85 0.08 340);
+  }
+  .dark .border-danger-soft {
+    border-color: oklch(0.36 0.08 340);
+  }
+
+  /* ─── SAIC-pattern saturated section blocks ─────────────────────────────
+     Each section gets its own Okabe-Ito hue at mid-chroma, light enough for
+     ink text to remain WCAG AA (contrast ≥ 4.5:1). Different hues rotate
+     so colorblind users see distinct lightness between adjacent sections.
+     Use on full-bleed <section> elements wrapping a max-w container. */
+  .bg-section-amber {
+    background: oklch(0.92 0.10 80);
+  }
+  .dark .bg-section-amber {
+    background: oklch(0.30 0.08 80);
+  }
+  .bg-section-brand {
+    background: var(--color-red-50);
+  }
+  .dark .bg-section-brand {
+    background: var(--color-red-950);
+  }
+  .bg-section-teal {
+    background: oklch(0.92 0.07 175);
+  }
+  .dark .bg-section-teal {
+    background: oklch(0.28 0.06 175);
+  }
+  .bg-section-fuchsia {
+    background: oklch(0.90 0.10 340);
+  }
+  .dark .bg-section-fuchsia {
+    background: oklch(0.30 0.10 340);
+  }
+  .bg-section-cyan {
+    background: oklch(0.90 0.06 220);
+  }
+  .dark .bg-section-cyan {
+    background: oklch(0.26 0.05 220);
+  }
+
+  /* Ink-dark footer block — inverted canvas like SAIC footer.
+     The background is hardcoded dark (works in both themes) and the
+     foreground utility tokens below stay light-on-dark regardless of
+     theme — `--paper` flips to dark in dark mode, so plain `text-paper/*`
+     utilities become invisible. The explicit oklch literals here mirror the
+     light-mode `--paper` value so the footer reads correctly in either theme. */
+  .bg-section-ink {
+    --link: var(--color-red-300);
+    background: oklch(0.18 0.01 260);
+    color: oklch(0.96 0.004 80);
+  }
+  .bg-section-ink a:hover {
+    color: oklch(0.85 0.16 80);  /* amber on hover, matches the bullet */
+  }
+
+  /* Footer-foreground utilities — light text on the dark footer slab.
+     Use these instead of `text-paper/*` which collapses to dark-on-dark
+     when the page is in dark mode. */
+  .text-on-section-ink        { color: oklch(0.96 0.004 80); }
+  .text-on-section-ink\/90    { color: oklch(0.96 0.004 80 / 0.90); }
+  .text-on-section-ink\/80    { color: oklch(0.96 0.004 80 / 0.80); }
+  .text-on-section-ink\/70    { color: oklch(0.96 0.004 80 / 0.70); }
+  .text-on-section-ink\/55    { color: oklch(0.96 0.004 80 / 0.55); }
+  .text-on-section-ink\/45    { color: oklch(0.96 0.004 80 / 0.45); }
+
+  /* ─── Scroll-to-top bullet (SAIC-style solid yellow circle) ───────────── */
+  .scroll-top-bullet {
+    position: fixed;
+    left: 1.5rem;
+    bottom: 1.5rem;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 9999px;
+    background: oklch(0.86 0.16 80);
+    color: oklch(0.18 0.01 260);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 18px oklch(0 0 0 / 0.18);
+    transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 200ms ease-out;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 40;
+  }
+  .scroll-top-bullet:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 26px oklch(0 0 0 / 0.22);
+  }
+  .scroll-top-bullet:active {
+    transform: translateY(0) scale(0.95);
+  }
+  .dark .scroll-top-bullet {
+    background: oklch(0.86 0.16 80);
+    color: oklch(0.18 0.01 260);
+    box-shadow: 0 8px 18px oklch(0 0 0 / 0.55);
+  }
+
+  /* ─── Big-number stat — display extreme, no underscore, ample leading ── */
+  .stat-brutal {
+    font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+    font-weight: 700;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+  }
+
+  /* ─── Numbered step node — circle marker for pipeline / process rows ─── */
+  .step-node {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1.5px solid currentColor;
+    border-radius: 9999px;
+    font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+    font-weight: 600;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  /* ─── Pill tag — small badge used in tech stack + status rows ────────── */
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.3125rem 0.75rem;
+    border: 1px solid currentColor;
+    border-radius: 9999px;
+    font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  /* ─── SAIC pattern: dense footer navigation rows ────────────────────── */
+  .footer-nav-row {
+    display: block;
+    padding: 0.5rem 0;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: color 180ms ease-out, padding-left 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .footer-nav-row:hover {
+    padding-left: 0.5rem;
+  }
+
+  /* ─── SVG ornament helpers — geometric, line-only, ink-tinted ───────── */
+  .ink-line {
+    stroke: oklch(0.18 0.01 260);
+    stroke-width: 1.25;
+    fill: none;
+  }
+  .dark .ink-line {
+    stroke: oklch(0.96 0.004 80);
+  }
+  .ink-dot {
+    fill: oklch(0.18 0.01 260);
+  }
+  .dark .ink-dot {
+    fill: oklch(0.96 0.004 80);
+  }
+
+  /* ─── Reveal-on-enter — used by inline SVG ornaments when section enters.
+     The .in-view class lands on the <Reveal> wrapper, NOT the SVG itself.
+     Use descendant selectors so the wrapper drives the child SVG draw. */
+  .reveal-draw path,
+  .reveal-draw line,
+  .reveal-draw polyline,
+  .reveal-draw circle,
+  .reveal-draw rect {
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+  }
+  .in-view .reveal-draw path,
+  .in-view .reveal-draw line,
+  .in-view .reveal-draw polyline,
+  .in-view .reveal-draw circle,
+  .in-view .reveal-draw rect {
+    animation: drawStroke 1200ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .in-view .reveal-draw .reveal-draw-dot {
+    animation: popDot 400ms cubic-bezier(0.34, 1.56, 0.64, 1) 800ms both;
+    opacity: 0;
+  }
+  @keyframes drawStroke {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes popDot {
+    from { opacity: 0; transform: scale(0); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* ─── Classic interactive animations ─────────────────────────────────────── */
+
+  /* Card hover lift — classic press + lift */
+  .card-lift {
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 200ms ease-out;
+  }
+  .card-lift:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Feature card — scale + shadow on hover */
+  .feature-card {
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 200ms ease-out;
+  }
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px oklch(0.18 0.01 260 / 0.08);
+  }
+  .feature-card:hover .feature-card-icon {
+    transform: scale(1.12) rotate(-3deg);
+  }
+  .feature-card-icon {
+    transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Contributor card — lift on hover */
+  .contributor-card {
+    transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                background 150ms ease-out;
+  }
+  .contributor-card:hover {
+    transform: translateY(-3px);
+  }
+  .contributor-card:hover .contributor-avatar {
+    transform: scale(1.05);
+  }
+  .contributor-avatar {
+    transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Tech pill hover — glow + scale */
+  .tag-pill {
+    transition: transform 150ms ease-out,
+                border-color 150ms ease-out,
+                color 150ms ease-out,
+                box-shadow 150ms ease-out;
+  }
+  .tag-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in oklch, var(--primary) 15%, transparent);
+    border-color: var(--primary);
+    color: var(--ink);
+  }
+
+  /* Pillar card — lift on hover */
+  .pillar-card {
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .pillar-card:hover {
+    transform: translateY(-5px);
+  }
+
+  /* Tenet card — lift on hover */
+  .tenet-card {
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .tenet-card:hover {
+    transform: translateY(-3px);
+  }
+
+  /* Step item — subtle slide-right on hover */
+  .step-item {
+    transition: transform 200ms ease-out;
+  }
+  .step-item:hover {
+    transform: translateX(6px);
+  }
+  .step-item:hover .step-node {
+    transform: scale(1.15);
+  }
+  .step-node {
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Team avatar — gentle rotation on hover */
+  .team-avatar {
+    transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .team-avatar:hover {
+    transform: scale(1.04);
+  }
+
+  /* Scroll-to-top button — fade in on scroll */
+  @keyframes scrollTopIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .scroll-top-visible {
+    animation: scrollTopIn 300ms ease-out forwards;
+  }
+
+  /* Nav link underline reveal — classic */
+  .nav-topik {
+    position: relative;
+  }
+  .nav-topik::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1.5px;
+    background: var(--primary);
+    transition: width 220ms ease-out;
+  }
+  .nav-topik:hover::after {
+    width: 100%;
+  }
+
+  /* Footer nav hover — underline slide in */
+  .footer-nav-row {
+    position: relative;
+    display: block;
+    transition: color 150ms ease-out, padding-left 150ms ease-out;
+  }
+  .footer-nav-row:hover {
+    color: var(--ink);
+    padding-left: 4px;
+  }
+
+  /* CTA button press effect */
+  .editorial-cta:active {
+    transform: scale(0.97) translateY(1px);
+  }
+
+  /* Pipeline node pulse on scroll enter */
+  @keyframes nodeEnter {
+    from { transform: scale(0.7); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .pipeline-node-enter {
+    animation: nodeEnter 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  /* Marquee item — slight scale on hover */
+  .marquee-item {
+    transition: transform 150ms ease-out;
+    cursor: default;
+  }
+  .marquee-item:hover {
+    transform: scale(1.08);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-draw path,
+    .reveal-draw line,
+    .reveal-draw polyline,
+    .reveal-draw circle,
+    .reveal-draw rect {
+      stroke-dasharray: none !important;
+      stroke-dashoffset: 0 !important;
+      animation: none !important;
+    }
+    .reveal-draw .reveal-draw-dot {
+      animation: none !important;
+      opacity: 1 !important;
+    }
+    .card-lift,
+    .feature-card,
+    .contributor-card,
+    .contributor-avatar,
+    .tag-pill,
+    .pillar-card,
+    .tenet-card,
+    .step-item,
+    .step-node,
+    .team-avatar,
+    .nav-topik::after,
+    .footer-nav-row,
+    .marquee-item {
+      animation: none !important;
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* ─── Marquee strip — SAIC-pattern horizontal ticker between sections ──
+     Track width is intentionally 2x viewport; we translate -50% to loop
+     seamlessly. Two speed variants: marquee-slow (45s) and marquee-fast (28s). */
+  .marquee {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 6%,
+      black 94%,
+      transparent 100%
+    );
+            mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 6%,
+      black 94%,
+      transparent 100%
+    );
+  }
+  .marquee-track {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    white-space: nowrap;
+    animation: marquee-slide 40s linear infinite;
+    will-change: transform;
+  }
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+  .marquee-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.75rem;
+    padding: 0 1.75rem;
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.25rem, 2.4vw, 2rem);
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .marquee-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: currentColor;
+    display: inline-block;
+    flex-shrink: 0;
+    opacity: 0.55;
+  }
+  @keyframes marquee-slide {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+    }
+  }
+
+  /* ─── CTA arrow slide — the icon inside .editorial-cta translates 4px ── */
+  .editorial-cta svg,
+  .editorial-ghost svg {
+    transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .editorial-cta:hover svg {
+    transform: translateX(4px) translateY(-2px);
+  }
+  .editorial-ghost:hover svg {
+    transform: translateX(4px);
+  }
+
+  /* ─── SAIC-pattern nav typography ──────────────────────────────────────────
+     Nav links: ALL CAPS, bold sans, tight tracking, white/ink inverted. */
+  .nav-topik {
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.625rem 1rem;
+    color: var(--ink);
+    opacity: 0.75;
+    transition: opacity 180ms ease-out, color 180ms ease-out;
+    position: relative;
+    line-height: 1.2;
+  }
+  .nav-topik::after {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    bottom: 0.375rem;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .nav-topik:hover { opacity: 1; }
+  .nav-topik:hover::after { transform: scaleX(1); }
+
+  /* Nav dropdown trigger — same typography as direct links, but with chevron. */
+  .nav-dropdown-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  .nav-dropdown-chevron {
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .nav-dropdown-trigger[aria-expanded="true"] .nav-dropdown-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Dropdown panel — dark ink surface with paper text, hairline dividers. */
+  .nav-dropdown-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 14rem;
+    margin-top: 0.25rem;
+    background: oklch(0.18 0.01 260);
+    color: oklch(0.96 0.004 80);
+    border: 1px solid oklch(0.96 0.004 80 / 0.12);
+    box-shadow: 0 14px 28px oklch(0 0 0 / 0.18), 0 4px 8px oklch(0 0 0 / 0.08);
+    z-index: 50;
+    animation: navDropdownIn 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes navDropdownIn {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-dropdown-panel {
+      animation: none;
+    }
+  }
+  .nav-dropdown-item {
+    display: block;
+    padding: 0.875rem 1.125rem;
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: oklch(0.96 0.004 80 / 0.85);
+    border-bottom: 1px solid oklch(0.96 0.004 80 / 0.08);
+    transition: color 160ms ease-out, background-color 160ms ease-out;
+  }
+  .nav-dropdown-item:last-child {
+    border-bottom: 0;
+  }
+  .nav-dropdown-item:hover {
+    color: oklch(0.96 0.004 80);
+    background-color: oklch(0.96 0.004 80 / 0.05);
+  }
+
+  /* ─── Pillar icon scale on hover ───────────────────────────────────── */
+  .pillar-art {
+    transition: transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                color 280ms ease-out;
+    transform-origin: center;
+  }
+  .pillar-art:hover {
+    transform: scale(1.08) rotate(-2deg);
+  }
+
+  /* ─── Feature card hover lift + icon shift ─────────────────────────── */
+  .feature-card {
+    transition: background 200ms ease-out,
+                border-color 200ms ease-out,
+                transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .feature-card:hover {
+    transform: translateY(-3px);
+  }
+  .feature-card:hover .feature-card-icon {
+    transform: scale(1.12) rotate(-3deg);
+    color: var(--ink);
+  }
+  .feature-card-icon {
+    transition: transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                color 220ms ease-out;
+    transform-origin: center;
+  }
+
+  /* ─── Eyebrow accent dot — small colored dot before section labels ──── */
+  .eyebrow-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: currentColor;
+    margin-right: 0.625rem;
+    vertical-align: 0.05em;
+  }
+
+  /* ─── Color block wipe — section tints fade in from below on enter ──── */
+  @keyframes sectionWipe {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .section-wipe {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .section-wipe.in-view {
+    animation: sectionWipe 700ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .section-wipe,
+    .section-wipe.in-view {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* ─── Stat counter slide-up + slight scale ──────────────────────────── */
+  @keyframes statRise {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  .stat-rise {
+    opacity: 0;
+  }
+  .stat-rise.in-view {
+    animation: statRise 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .stat-rise.in-view.stat-rise-d1 { animation-delay: 0ms; }
+  .stat-rise.in-view.stat-rise-d2 { animation-delay: 80ms; }
+  .stat-rise.in-view.stat-rise-d3 { animation-delay: 160ms; }
+  .stat-rise.in-view.stat-rise-d4 { animation-delay: 240ms; }
+  @media (prefers-reduced-motion: reduce) {
+    .stat-rise,
+    .stat-rise.in-view {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* ─── View Transitions — auth card morph (login ↔ register) ─────────── */
+::view-transition-group(auth-card) {
+  animation-duration: 480ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+::view-transition-old(auth-card),
+::view-transition-new(auth-card) {
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+::view-transition-old(auth-card) {
+  animation: 280ms cubic-bezier(0.4, 0, 1, 1) both fade-out-scale,
+    280ms cubic-bezier(0.4, 0, 1, 1) both blur-out;
+}
+::view-transition-new(auth-card) {
+  animation: 380ms cubic-bezier(0, 0, 0.2, 1) 80ms both fade-in-scale,
+    380ms cubic-bezier(0, 0, 0.2, 1) 80ms both blur-in;
+}
+@keyframes fade-out-scale {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes blur-out {
+  to {
+    filter: blur(4px);
+  }
+}
+@keyframes blur-in {
+  from {
+    filter: blur(4px);
+  }
+  to {
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(auth-card),
+  ::view-transition-old(auth-card),
+  ::view-transition-new(auth-card) {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+  }
+  @keyframes fade-out-scale { to { opacity: 0; transform: none; } }
+  @keyframes fade-in-scale { from { opacity: 0; transform: none; } }
+}
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-150 { animation-delay: 150ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-400 { animation-delay: 400ms; }
+
+/* Glass shimmer — sweeps on hover for interactive cards */
+.glass-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.glass-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(1 0 0 / 0.15),
+    transparent
+  );
+  transform: translateX(-100%) skewX(-12deg);
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.dark .glass-shimmer::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(1 0 0 / 0.08),
+    transparent
+  );
+}
+.glass-shimmer:hover::after {
+  animation: shimmerSweep 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Notification banner — glassmorphism pill */
+.glass-notif {
+  background: linear-gradient(
+    135deg,
+    oklch(0.97 0.02 25 / 0.85),
+    oklch(0.94 0.03 25 / 0.7)
+  );
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid oklch(0.85 0.05 25 / 0.45);
+  box-shadow: 0 1px 2px oklch(0.65 0.22 25 / 0.06);
+  animation: notifPulse 2.4s ease-in-out infinite;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), background 200ms ease-out;
+}
+.glass-notif:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(
+    135deg,
+    oklch(0.97 0.025 25 / 0.92),
+    oklch(0.94 0.035 25 / 0.78)
+  );
+}
+.dark .glass-notif {
+  background: linear-gradient(
+    135deg,
+    oklch(0.20 0.04 25 / 0.75),
+    oklch(0.18 0.05 25 / 0.55)
+  );
+  border-color: oklch(0.32 0.08 25 / 0.5);
+}
+
+/* Staff workspace: retain paper/ink identity, give data and controls more room. */
+.dashboard-shell {
+  background: radial-gradient(ellipse at 95% 0%, color-mix(in oklch, var(--primary) 5%, transparent), transparent 48%), var(--paper);
+  color: var(--ink);
+}
+.dark .dashboard-shell { --muted-foreground: oklch(0.73 0.01 250); }
+.dashboard-panel,
+.dashboard-shell .editorial-panel,
+.dashboard-metric {
+  border: 1px solid var(--hairline);
+  border-radius: 0.875rem;
+  background: var(--card);
+  box-shadow: 0 2px 8px color-mix(in oklch, var(--ink) 3%, transparent);
+}
+.dashboard-metric { border-top: 3px solid color-mix(in oklch, var(--primary) 40%, var(--hairline)); }
+.dashboard-shell .grid:has(> .dashboard-metric) {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 1rem;
+  background: transparent;
+}
+.dashboard-shell main > div > section:has(> .grid > .dashboard-metric) { border-top: 0; }
+.dashboard-panel.dashboard-follow-up {
+  border-left: 4px solid var(--primary);
+  background: linear-gradient(115deg, color-mix(in oklch, var(--primary) 5%, var(--card)), var(--card));
+}
+.dashboard-shell main .eyebrow,
+.dashboard-shell main .eyebrow-sm {
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+.dashboard-shell main :is(.text-xs, [class~="text-[10px]"], [class~="text-[11px]"]) {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.dashboard-shell main :is([class~="text-ink/35"], [class~="text-ink/40"], [class~="text-ink/45"], [class~="text-ink/50"], [class~="text-ink/55"], [class~="text-ink/60"]) {
+  color: var(--muted-foreground);
+}
+.dashboard-shell main :is([data-slot="input"], [data-slot="textarea"]) {
+  min-height: 2.75rem;
+  font-size: 1rem;
+}
+.dashboard-shell main [data-slot="textarea"] { min-height: 6rem; }
+.dashboard-shell main :is(button:not([role="switch"], [role="checkbox"], [role="radio"]), [data-slot="select-trigger"], [data-slot="tabs-trigger"]) {
+  min-height: 2.75rem;
+  border-radius: 0.5rem;
+}
+.dashboard-shell main button:not([role="switch"], [role="checkbox"], [role="radio"]) { min-width: 2.75rem; }
+.dashboard-shell main [data-slot="tabs-list"] {
+  height: auto;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.25rem;
+}
+.dashboard-shell main [data-slot="table-head"] { height: 3rem; }
+.dashboard-shell main [data-slot="table-cell"] { padding-block: 0.875rem; }
+.dashboard-shell main [data-slot="table-header"] { background: var(--muted); }
+.dashboard-shell main .lucide { stroke-width: 1.8; }
+.dashboard-shell :focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  scroll-margin-block: 6rem;
+}
+.ai-prose {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+.ai-prose :is(h3, h4) { margin: 1.25rem 0 0.5rem; font-weight: 700; font-size: 1.125rem; }
+.ai-prose :is(p, ul, ol, blockquote, pre) { margin: 0.75rem 0; }
+.ai-prose ul { list-style: disc; padding-left: 1.5rem; }
+.ai-prose ol { list-style: decimal; padding-left: 1.5rem; }
+.ai-prose li + li { margin-top: 0.25rem; }
+.ai-prose a { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+.ai-prose blockquote { border-left: 3px solid var(--primary); padding-left: 1rem; color: var(--muted-foreground); }
+.ai-prose code { font-size: 0.875rem; background: var(--muted); border-radius: 0.25rem; padding: 0.125rem 0.25rem; }
+.ai-prose pre { max-width: 100%; overflow-x: auto; background: var(--muted); padding: 1rem; border-radius: 0.5rem; }
+.ai-prose pre code { padding: 0; }
+.ai-prose table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.ai-prose th { background: var(--muted); font-weight: 600; }
+.ai-prose :is(th, td) { border-bottom: 1px solid var(--hairline); padding: 0.75rem; text-align: left; vertical-align: top; }
+.ai-prose > :first-child { margin-top: 0; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .dashboard-shell *, .dashboard-shell *::before, .dashboard-shell *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Brand links remain distinct from black body text and filled actions. */
+a[href]:not(.editorial-cta):not(.bg-action) { color: var(--link); }
+a[href]:not(.editorial-cta):not(.bg-action):hover { text-decoration-color: currentColor; }

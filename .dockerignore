@@ -1,0 +1,31 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Build artifacts
+.next/
+out/
+
+# Local env
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+coverage/
+
+# Git
+.git/
+.gitignore
+
+# Standalone artifacts yang akan di-copy di stage builder (jangan double-copy)
+.next/standalone/
