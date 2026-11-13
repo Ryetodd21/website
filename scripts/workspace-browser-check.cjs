@@ -118,6 +118,7 @@ async function main() {
    if(['dashboard','ai','students'].includes(route)) fs.writeFileSync(`${out}/${route}-accessibility.txt`,await page.locator('main').ariaSnapshot());
   }
   await page.goto(`${base}/login`);
+  assert.equal(await page.locator('link[rel="preload"][as="font"]').count(),0,'Fonts load on demand instead of unused global preloads');
   for(const theme of ['light','dark']) {
    await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);
    await page.waitForTimeout(250);

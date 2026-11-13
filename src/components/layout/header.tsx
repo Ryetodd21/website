@@ -106,7 +106,7 @@ export function Header() {
 
             <DropdownMenuItem render={<Link href="/profile" />} className="min-h-11 gap-3"><UserRound aria-hidden="true" />Akun Saya</DropdownMenuItem>
 
-            {isStaff && <DropdownMenuItem render={<Link href="/settings" />} className="min-h-11 gap-3"><Settings aria-hidden="true" />Pengaturan</DropdownMenuItem>}
+            {isStaff && <DropdownMenuItem render={<Link href="/settings" prefetch={false} />} className="min-h-11 gap-3"><Settings aria-hidden="true" />Pengaturan</DropdownMenuItem>}
 
             <DropdownMenuItem disabled={loggingOut} onClick={handleLogout} className="min-h-11 gap-3 text-destructive">
               <LogOut aria-hidden="true" />

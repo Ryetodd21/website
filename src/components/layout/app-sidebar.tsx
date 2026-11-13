@@ -74,6 +74,7 @@ export function AppSidebar() {
                   const Icon = item.icon;
                   const link = <Link
                     href={item.href}
+                    prefetch={item.href === "/settings" ? false : undefined}
                     aria-current={active ? "page" : undefined}
                     aria-label={collapsed ? item.label : undefined}
                     onClick={() => { if (isMobile) setOpenMobile(false); }}

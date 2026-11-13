@@ -958,6 +958,7 @@ export function subscribeLogsStreamWebSocket(
   let closed = false;
   let attempt = 0;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  const controller = new AbortController();
   const base = new URL(API_BASE || window.location.origin, window.location.origin);
   const endpoint = new URL("/api/logs/stream/ws", base);
   endpoint.protocol = base.protocol === "https:" ? "wss:" : "ws:";
@@ -975,8 +976,25 @@ export function subscribeLogsStreamWebSocket(
     reconnectTimer = setTimeout(connect, Math.min(30_000, 500 * 2 ** attempt++));
   }
 
-  function connect() {
+  async function connect() {
     if (closed) return;
+    // Rejected handshakes surface as 1006; HTTP can refresh cookies and verify the current role.
+    try {
+      const user = await apiFetch<CurrentUser>("/api/auth/me", {
+        noRedirect: true,
+        signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10_000)]),
+      });
+      if (closed) return;
+      if (!["admin", "dosen"].includes(user.role)) {
+        onMessage({ event: "disconnected" });
+        return;
+      }
+    } catch (error) {
+      if (closed) return;
+      onMessage({ event: "disconnected" });
+      if (!(error instanceof RedirectError)) retry();
+      return;
+    }
     const current = new WebSocket(endpoint.href);
     socket = current;
     current.onopen = () => {
@@ -988,23 +1006,19 @@ export function subscribeLogsStreamWebSocket(
       try { data = JSON.parse(event.data) as LogStreamEvent; } catch { return; }
       if (data.event !== "connected") onMessage(data);
     };
-    current.onclose = async (event) => {
+    current.onclose = () => {
       if (socket !== current || closed) return;
       socket = null;
       onMessage({ event: "disconnected" });
-      if (event.code === 1008) {
-        try {
-          if (!await refreshAccessToken()) return;
-        } catch { /* Temporary outage: retry with backoff. */ }
-      }
       retry();
     };
     current.onerror = () => current.close();
   }
 
-  connect();
+  void connect();
   return () => {
     closed = true;
+    controller.abort();
     if (reconnectTimer) clearTimeout(reconnectTimer);
     socket?.close(1000, "client unmount");
   };

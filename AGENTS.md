@@ -59,7 +59,7 @@ Route dashboard berada dalam grup `(dashboard)`; nama grup bukan bagian URL. Lay
 
 - `subscribeLogsStreamWebSocket` di `src/lib/api.ts` menerima event JSON dan mengembalikan cleanup. Panggil cleanup ketika unmount; jangan membuat stream ganda atau reconnect timer yang tertinggal.
 - Path stream aktif `/api/logs/stream/ws`; browser mengirim cookie HttpOnly `access_token`, bukan JWT di URL.
-- URL stream dibentuk dari origin API (HTTP menjadi WS, HTTPS menjadi WSS). `NEXT_PUBLIC_WS_RELAY_URL` hanya digunakan jika hostname dan skema aman sama dengan origin API, karena cookie host-only tidak berlaku di subdomain lain. Reconnect memakai backoff terbatas, cleanup membatalkan timer; event connected/disconnected memperbarui indikator. Penutupan 1008 mencoba refresh sebelum reconnect.
+- URL stream dibentuk dari origin API (HTTP menjadi WS, HTTPS menjadi WSS). `NEXT_PUBLIC_WS_RELAY_URL` hanya digunakan jika hostname dan skema aman sama dengan origin API, karena cookie host-only tidak berlaku di subdomain lain. Reconnect memakai backoff terbatas, cleanup membatalkan timer; event connected/disconnected memperbarui indikator. Setiap koneksi/reconnect memeriksa sesi melalui /api/auth/me dan refresh HTTP bila diperlukan; sesi invalid menghentikan retry, cleanup membatalkan preflight.
 - Jangan mengasumsikan SSE atau `/logs/stream-auth` tersedia karena dokumentasi lama menyebutnya. Implementasi client saat ini menggunakan WebSocket.
 - `next.config.ts` mengekspos `NEXT_PUBLIC_API_URL`, default `http://localhost:8000`, serta rewrite `/api/:path*` ke `http://api:8000/api/:path*`. Host `api` adalah DNS Docker; bukan otomatis alamat backend yang dapat diakses proses Next lokal.
 - Cookie backend sekarang Secure + SameSite=None tanpa Domain eksplisit. Keberhasilan login HTTP lokal atau WS lintas subdomain harus diverifikasi pada environment target; jangan melemahkan cookie/CORS untuk menutupi salah routing.
@@ -107,7 +107,7 @@ Sumber kebenaran: `src/app/globals.css`, `src/app/layout.tsx`, primitive dan kom
 | --- | --- |
 | Kanvas | `--paper`, `--ink`, `--hairline`, `--hairline-soft`; gunakan `bg-paper`, `text-ink`, `border-hairline`. |
 | Warna | Primary red-600; tombol utama red-800 (hover red-900); tautan red-700, teks biasa yang sebelumnya biru memakai ink hitam. Dark mode memakai tautan red-300 dan ink terang untuk kontras. Success teal; warning amber; destructive fuchsia; info cyan. Token status online/pending/offline mempunyai pengecualian hijau/kuning/merah tersendiri. |
-| Font | Inter untuk body/UI, Montserrat 800/900 untuk display, Fraunces 500/700 untuk aksen serif, JetBrains Mono untuk angka/ID/kode. Dimuat melalui next/font/google. |
+| Font | Inter untuk body/UI, Montserrat 800/900 untuk display, Fraunces 500/700 untuk aksen serif, JetBrains Mono untuk angka/ID/kode. Dimuat melalui next/font/google dengan display swap; preload global dinonaktifkan agar font dimuat saat digunakan, termasuk Inter dan JetBrains Mono. |
 | Judul | `.display-sans`, `.display-sans-uc`, `.display-sans-black`; aksen `.display-italic`; label `.eyebrow`, `.eyebrow-sm`. |
 | Panel | `.editorial-panel` dengan radius kecil; `.lift-*` dan shadow token tersedia untuk elevasi lembut. Larangan historis semua shadow tidak lagi menggambarkan CSS aktual. |
 | Form/tindakan | `.editorial-input`, `.editorial-cta`, `.editorial-ghost`, atau house component yang mengimplementasikan pola tersebut. |
@@ -182,6 +182,28 @@ Pemeriksaan HTTP lewat browser pada domain publik: `/`, `/login`, `/register`, `
 
 Lint global 0 error/0 warning, TypeScript, dua regresi Node, dan pemeriksaan browser image kandidat lulus. Landing diuji 320/375/768/1024/1440/1920px light/dark, termasuk tinggi judul stabil ketika bahasa berganti. Pengujian dialog menunggu fokus aktual siap, bukan jeda tetap sebelum menguji Tab. Browser publik dengan CSP asli membuktikan hero/konten baru, dekorasi tim hilang, CTA red-800, desktop/mobile dark, serta tidak ada pageerror. Bukti: `/tmp/monitor-ung-landing-evidence`; log build/deploy/browser di `/tmp/monitor-ung-landing-*.log`. Bukti sementara, bukan artefak repo.
 
+## Investigasi WebSocket production 2026-11-13
+
+Perbaikan preflight sesi WebSocket dan preload font telah deploy ke layanan web saja; container healthy. Lint 0 error/0 warning, TypeScript, regresi Node, dan browser 15 halaman lulus. Image: `sha256:68254cc8a46dee21cae1fd6dbbd690b172f8777a57466445d77b9314cce6d508`; rollback: `monitorung-web:rollback-ws-20261113-212412`. Log: `/tmp/monitor-ung-ws-build.log`, `/tmp/monitor-ung-ws-browser.log`, `/tmp/monitor-ung-ws-deploy.log`.
+
+Browser publik mereproduksi HTTP 502 saat handshake `wss://monitorterop.my.id/api/logs/stream/ws`. Probe tanpa sesi ke API/Next lokal menghasilkan 403; rute melalui hostname MQTT yang menuju API langsung juga menghasilkan 403. Tidak memakai token pengguna atau mengubah otorisasi untuk probe. Konfigurasi tunnel aktif dari log Cloudflare hanya mengarahkan hostname utama ke `http://172.18.0.9:3000`, berbeda dari file lokal `.cloudflared/config.yml` yang sudah memiliki rute `^/api/.*` ke API. Konfigurasi remote menimpa file lokal.
+
+Pengguna sudah menambahkan dan memindahkan rute hostname `monitorterop.my.id`, path `^/api/.*`, service `http://localhost:8000` sebelum rute web tanpa path; urutan terkonfirmasi dari konfigurasi runtime tunnel. Probe publik setelah perubahan masih HTTP 502 dengan body `Origin rejected: 403`, sedangkan probe anonim ke API lokal dan hostname MQTT HTTP 403. Ini mengindikasikan lapisan relay mengubah penolakan origin; konfigurasi Worker/rute domain belum diperiksa dan streaming staf terautentikasi belum diuji. Website dan /api/status HTTP 200. Credential connector lokal bukan bukti izin mengubah konfigurasi remote. Jangan melemahkan cookie, melewatkan RBAC, atau menaruh JWT di URL untuk mengatasi 502.
+
+Font pada dua URL preload yang dilaporkan adalah Inter dan JetBrains Mono. Stylesheet `0n8kzvw2z_6as.css` berisi Leaflet; prefetch route Pengaturan dapat memuatnya sebelum dipakai. Peringatan stylesheet tersebut terpisah dari kegagalan WebSocket.
+
+Tindak lanjut 2026-11-13: prefetch tautan Pengaturan pada sidebar/header dinonaktifkan untuk menghindari pemuatan CSS Leaflet sebelum navigasi; sudah deploy 2026-11-14. Probe Chromium publik anonim terbaru mendapat handshake 403 (close 1006), bukan 502; ini hanya membuktikan penolakan sesi kosong, bukan pemulihan stream staf. Menu Mahasiswa tidak berlangganan WebSocket; subscription Dashboard ditutup saat unmount.
+
+## Deploy production dan distribusi APK 2026-11-14
+
+Keempat unduhan APK publik dan SHA256SUMS.txt diverifikasi 200 dengan checksum sama seperti artefak lokal. Probe browser unduhan universal macet; verifikasi universal/x86_64 diselesaikan melalui curl. Halaman publik dan /api/status 200; POST refresh tanpa sesi/body 401.
+
+Image API/web dibangun tanpa cache; layanan api/worker/scheduler/subscriber/web diperbarui dan healthy. Prefetch Pengaturan pada sidebar/header sudah dinonaktifkan dalam rilis ini. PostgreSQL, Redis, MQTT dan tunnel tidak direstart. Backend menerima refresh cookie tanpa body; sesi kosong mendapat 401, bukan 422. Tidak ada perubahan transport WebSocket pada rilis ini; sesi staf production belum diuji.
+
+APK Android signed production 0.29.1 (versionCode 30) didistribusikan melalui `/downloads/monitor-ung-0.29.1-universal.apk`, serta varian `arm64-v8a`, `armeabi-v7a`, `x86_64`; `/downloads/SHA256SUMS.txt` menyimpan checksum. APK dimasukkan ke public assets image web. Detail pemeriksaan dan batas perangkat ada di memory Android.
+
+Lint web, dua regresi Node, build/TypeScript, dan browser kandidat 15 halaman pada desktop/mobile light/dark lulus tanpa pageerror; API browser kandidat sintetis. Log `/tmp/monitorung-prod30-*.log`, bukti browser `/tmp/monitorung-prod30-browser-evidence`. Rollback image `monitorung-api:rollback-20261114` dan `monitorung-web:rollback-20261114`; backup DB terverifikasi dan manifest image di direktori privat `/home/terio-op/releases/20261114-production/`. Jangan salin direktori rilis privat ke public assets.
+
 ## Batas verifikasi memory
 
-Matriks dashboard memakai API sintetis dan bypassCSP untuk mengisolasi UI; smoke test landing production memakai layanan publik dan CSP asli. Hasil ini tidak membuktikan cookie/API/CSP produksi, training model nyata, atau jawaban Groq nyata. Deploy hanya layanan web; tidak ada seed atau migrasi DB. Pengujian pembaca layar manual dan audit WCAG menyeluruh belum dilakukan. Jangan menganggap pengecekan accessibility tree sebagai pengujian screen reader nyata.
+Matriks dashboard memakai API sintetis dan bypassCSP untuk mengisolasi UI; smoke test landing production memakai layanan publik dan CSP asli. Hasil ini tidak membuktikan cookie/API/CSP produksi, training model nyata, atau jawaban Groq nyata. Overhaul 2026-11-13 hanya deploy web; rilis 2026-11-14 juga memperbarui backend dengan startup migrasi existing, tanpa seed. Pengujian pembaca layar manual dan audit WCAG menyeluruh belum dilakukan. Jangan menganggap pengecekan accessibility tree sebagai pengujian screen reader nyata.

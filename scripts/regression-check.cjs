@@ -13,7 +13,7 @@ function load(file, globals = {}, names) {
       .map(node => node.getText(tree)).join("\n");
     source += `\nObject.assign(exports, {${names.join(",")}});`;
   }
-  const context = { exports: {}, console, URL, AbortSignal, DOMException, ...globals };
+  const context = { exports: {}, console, URL, AbortController, AbortSignal, DOMException, ...globals };
   vm.createContext(context);
   vm.runInContext(ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
@@ -44,6 +44,12 @@ function client(fetch, relay = "") {
 }
 
 const response = (status, body = {}) => ({ status, ok: status >= 200 && status < 300, json: async () => body });
+const flush = () => new Promise(resolve => setImmediate(resolve));
+async function retrySocket(client) {
+  const [id, retry] = [...client.timers][0]; client.timers.delete(id);
+  await retry();
+  return retry;
+}
 
 async function main() {
   for (const status of [429, 500, 503]) {
@@ -75,24 +81,86 @@ async function main() {
   assert.equal(loggedOut.storage.get("monitor-ung-theme"), "dark");
   assert.equal(loggedOut.events.length, 1);
 
-  const c = client(async () => response(200, { access_token: "synthetic-token" }),
+  const c = client(async () => response(200, { role: "admin" }),
     "wss://different-host.invalid/api/logs/stream/ws");
   const messages = [];
   const stop = c.api.subscribeLogsStreamWebSocket(message => messages.push(message));
+  await flush();
   assert.equal(c.sockets[0].url, "wss://example.invalid/api/logs/stream/ws");
   c.sockets[0].onopen();
   assert.equal(messages.at(-1).event, "connected");
   await c.sockets[0].onclose({ code: 1006 });
   assert.equal(messages.at(-1).event, "disconnected");
-  const [id, retry] = [...c.timers][0]; c.timers.delete(id); retry();
+  const retry = await retrySocket(c);
   assert.equal(c.sockets.length, 2);
   c.sockets[1].onopen();
   await c.sockets[1].onclose({ code: 1008 });
   assert.equal(c.timers.size, 1);
   stop();
   assert.equal(c.timers.size, 0);
-  retry();
+  await retry();
   assert.equal(c.sockets.length, 2);
+
+  let sessionValid = false, socketRefreshes = 0;
+  const expiring = client(async url => {
+    if (url.endsWith('/refresh')) {
+      socketRefreshes++; sessionValid = true;
+      return response(200, { access_token: 'synthetic-token' });
+    }
+    return response(sessionValid ? 200 : 401, { role: 'dosen' });
+  });
+  const stopExpiring = expiring.api.subscribeLogsStreamWebSocket(() => {});
+  await flush();
+  assert.equal(socketRefreshes, 1, 'Refresh before opening a socket with an expired access cookie');
+  assert.equal(expiring.sockets.length, 1);
+  expiring.sockets[0].onopen(); sessionValid = false;
+  expiring.sockets[0].onclose({ code: 1006 });
+  await retrySocket(expiring);
+  assert.equal(socketRefreshes, 2, 'A failed handshake must revalidate HTTP auth even when the browser reports 1006');
+  assert.equal(expiring.sockets.length, 2);
+  stopExpiring();
+
+  for (const result of [response(401), response(200, { role: 'mahasiswa' })]) {
+    const denied = client(async () => result);
+    const stopDenied = denied.api.subscribeLogsStreamWebSocket(() => {});
+    await flush();
+    assert.equal(denied.sockets.length, 0, 'No stream without a current staff session');
+    assert.equal(denied.timers.size, 0, 'Rejected sessions must not reconnect repeatedly');
+    assert.equal(denied.window.location.href, '/reports');
+    stopDenied();
+  }
+
+  let available = false;
+  const outage = client(async () => response(available ? 200 : 503, { role: 'admin' }));
+  const stopOutage = outage.api.subscribeLogsStreamWebSocket(() => {});
+  await flush();
+  assert.equal(outage.sockets.length, 0);
+  assert.equal(outage.timers.size, 1, 'Temporary auth service outages retain backoff');
+  available = true; await retrySocket(outage);
+  assert.equal(outage.sockets.length, 1);
+  stopOutage();
+
+  let finishCheck, checkSignal;
+  const leaving = client((url, options) => {
+    checkSignal = options.signal;
+    return new Promise(resolve => { finishCheck = resolve; });
+  });
+  const stopLeaving = leaving.api.subscribeLogsStreamWebSocket(() => {});
+  stopLeaving();
+  assert.equal(checkSignal.aborted, true);
+  finishCheck(response(200, { role: 'admin' })); await flush();
+  assert.equal(leaving.sockets.length, 0, 'Late auth responses cannot reopen an unmounted stream');
+
+  const brokenRoute = client(async () => response(200, { role: 'admin' }));
+  const stopBrokenRoute = brokenRoute.api.subscribeLogsStreamWebSocket(() => {});
+  await flush();
+  for (let attempt = 0; attempt < 10; attempt++) {
+    brokenRoute.sockets.at(-1).onclose({ code: 1006 });
+    await retrySocket(brokenRoute);
+  }
+  brokenRoute.sockets.at(-1).onclose({ code: 1006 });
+  assert.equal(brokenRoute.timers.size, 0, 'Broken routes stop after ten retries');
+  stopBrokenRoute();
 
   const { escapeCsvCell } = load("src/components/ui/download-button.tsx", {}, ["escapeCsvCell"]);
   for (const value of ["=1+1", "+1+1", "-1+1", "@SUM(A1)", "\t=1+1", "\r=1+1"]) {
@@ -110,6 +178,6 @@ async function main() {
     const actual = witaWeekRange(new Date(now));
     assert.equal(actual.start, start); assert.equal(actual.end, end);
   }
-  console.log("PASS refresh/retry, logout/cache, WebSocket lifecycle, CSV safety, WITA week boundaries");
+  console.log("PASS refresh/retry, logout/cache, WebSocket session preflight/1006 refresh/denial/backoff/unmount, CSV safety, WITA week boundaries");
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });
