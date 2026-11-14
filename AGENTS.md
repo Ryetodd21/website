@@ -204,6 +204,10 @@ APK Android signed production 0.29.1 (versionCode 30) didistribusikan melalui `/
 
 Lint web, dua regresi Node, build/TypeScript, dan browser kandidat 15 halaman pada desktop/mobile light/dark lulus tanpa pageerror; API browser kandidat sintetis. Log `/tmp/monitorung-prod30-*.log`, bukti browser `/tmp/monitorung-prod30-browser-evidence`. Rollback image `monitorung-api:rollback-20261114` dan `monitorung-web:rollback-20261114`; backup DB terverifikasi dan manifest image di direktori privat `/home/terio-op/releases/20261114-production/`. Jangan salin direktori rilis privat ke public assets.
 
+## Konfirmasi pengguna setelah migrasi UpCloud
+
+Pada 2026-11-14 pengguna mengonfirmasi login nyata dan uji training sudah dilakukan setelah production berpindah ke VPS dan Managed PostgreSQL UpCloud. Ini bukti yang dilaporkan pengguna, bukan pengujian ulang oleh agen. Status deployment/database terbaru mengikuti root dan memory backend. Pengingat desktop lokal setiap 25 hari untuk backup serta persiapan migrasi VPS aktif, pertama 2026-12-09 pukul 09.00 WITA; detail mekanisme dan batasnya di root AGENTS.md.
+
 ## Batas verifikasi memory
 
 Matriks dashboard memakai API sintetis dan bypassCSP untuk mengisolasi UI; smoke test landing production memakai layanan publik dan CSP asli. Hasil ini tidak membuktikan cookie/API/CSP produksi, training model nyata, atau jawaban Groq nyata. Overhaul 2026-11-13 hanya deploy web; rilis 2026-11-14 juga memperbarui backend dengan startup migrasi existing, tanpa seed. Pengujian pembaca layar manual dan audit WCAG menyeluruh belum dilakukan. Jangan menganggap pengecekan accessibility tree sebagai pengujian screen reader nyata.
