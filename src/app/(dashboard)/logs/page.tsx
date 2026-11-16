@@ -122,7 +122,7 @@ export default function LogsPage() {
 
   // Fetch historical logs from DB on mount (student_name/nim included in response)
   useEffect(() => {
-    const ctrl = new AbortController();
+    let ctrl = new AbortController();
     async function loadHistory() {
       try {
         const events = await getLogHistory(LOG_HISTORY_FETCH_SIZE, ctrl.signal);
@@ -194,7 +194,16 @@ export default function LogsPage() {
       }
     }
     loadHistory();
-    return () => ctrl.abort();
+    const handleFilterChanged = () => {
+      ctrl.abort();
+      ctrl = new AbortController();
+      loadHistory();
+    };
+    window.addEventListener("academic-filter-changed", handleFilterChanged);
+    return () => {
+      ctrl.abort();
+      window.removeEventListener("academic-filter-changed", handleFilterChanged);
+    };
   }, []);
 
   useEffect(() => {

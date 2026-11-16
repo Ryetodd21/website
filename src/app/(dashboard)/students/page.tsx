@@ -182,6 +182,15 @@ function StudentsPageInner() {
   const sortedItems = useMemo(() => sortedFn(data?.items ?? []), [sortedFn, data?.items]);
 
   useEffect(() => {
+    const handleFilterChanged = () => {
+      setPage(1);
+      loadStudents();
+    };
+    window.addEventListener("academic-filter-changed", handleFilterChanged);
+    return () => window.removeEventListener("academic-filter-changed", handleFilterChanged);
+  }, [loadStudents]);
+
+  useEffect(() => {
     const timer = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, STUDENT_SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [search]);

@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/header";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { UserProfileProvider } from "@/lib/user-profile";
+import { AcademicFilterProvider } from "@/lib/academic-filter";
 import { InstitutionProvider } from "@/lib/institution";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { RoleGate, STAFF_ROLES } from "@/components/auth/role-gate";
@@ -47,16 +48,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <AuthGuard>
       <InstitutionProvider>
         <UserProfileProvider>
-          <SidebarProvider defaultOpen className="dashboard-shell">
-            <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-card focus:p-4 focus:text-ink">Lewati navigasi</a>
-            <AppSidebar />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <Header />
-              <main id="main-content" tabIndex={-1} className="mx-auto w-full min-w-0 max-w-[1600px] flex-1 px-4 pt-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-8 md:pb-8">{content}</main>
-            </div>
-            <ShortcutsHelp />
-            <MobileBottomNav />
-          </SidebarProvider>
+          <AcademicFilterProvider>
+            <SidebarProvider defaultOpen className="dashboard-shell">
+              <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-card focus:p-4 focus:text-ink">Lewati navigasi</a>
+              <AppSidebar />
+              <div className="flex min-w-0 flex-1 flex-col">
+                <Header />
+                <main id="main-content" tabIndex={-1} className="mx-auto w-full min-w-0 max-w-[1600px] flex-1 px-4 pt-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-8 md:pb-8">{content}</main>
+              </div>
+              <ShortcutsHelp />
+              <MobileBottomNav />
+            </SidebarProvider>
+          </AcademicFilterProvider>
         </UserProfileProvider>
       </InstitutionProvider>
     </AuthGuard>

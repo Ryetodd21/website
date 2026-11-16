@@ -208,6 +208,18 @@ Lint web, dua regresi Node, build/TypeScript, dan browser kandidat 15 halaman pa
 
 Pada 2026-11-14 pengguna mengonfirmasi login nyata dan uji training sudah dilakukan setelah production berpindah ke VPS dan Managed PostgreSQL UpCloud. Ini bukti yang dilaporkan pengguna, bukan pengujian ulang oleh agen. Status deployment/database terbaru mengikuti root dan memory backend. Pengingat desktop lokal setiap 25 hari untuk backup serta persiapan migrasi VPS aktif, pertama 2026-12-09 pukul 09.00 WITA; detail mekanisme dan batasnya di root AGENTS.md.
 
+## Perubahan 2026-11-16 (ponytail batch)
+
+**Login Android**: `src/lib/academic-filter.tsx` dan `src/components/layout/academic-filter-bar.tsx` adalah file baru; jangan hapus.
+
+**Filter akademik global (jurusan + prodi)** tersedia di header dashboard melalui `AcademicFilterBar`. Provider `AcademicFilterProvider` di `src/lib/academic-filter.tsx` mem-fire `CustomEvent("academic-filter-changed")` saat filter berubah. Halaman yang subscribe: dashboard, students, monitoring, reports, logs. Filter dikirim sebagai header `x-jurusan-id` / `x-program-studi-id` via `apiFetch` di `src/lib/api.ts` (module-level state `activeJurusanId`/`activeProgramStudiId`). Dosen: jurusan dikunci ke afiliasi user, hanya prodi yang bisa dipilih. Admin: bebas memilih keduanya.
+
+**Filter prodi di Akademik** (`src/app/(dashboard)/akademik/page.tsx`): dropdown filter prodi lokal per tabel Mata Kuliah dan Jadwal (state `filterProdiMk`/`filterProdiJdw`), computed memos `filteredMataKuliah`/`filteredJadwal`. Empty state berbeda untuk "filter kosong" vs "belum ada data".
+
+**Perubahan `api.ts`**: tambah `setAcademicScopeHeaders()`, `getAcademicScopeHeaders()`, dan auto-inject header di `apiFetch`. Path meta (`/api/jurusan`, `/api/fakultas`, `/api/auth`) tidak disertakan header filter.
+
+TypeScript 0 error (tsc --noEmit), build Turbopack — 4 error font Google Fonts (jaringan sandbox); bukan bug kode, akan resolve di environment dengan internet.
+
 ## Batas verifikasi memory
 
 Matriks dashboard memakai API sintetis dan bypassCSP untuk mengisolasi UI; smoke test landing production memakai layanan publik dan CSP asli. Hasil ini tidak membuktikan cookie/API/CSP produksi, training model nyata, atau jawaban Groq nyata. Overhaul 2026-11-13 hanya deploy web; rilis 2026-11-14 juga memperbarui backend dengan startup migrasi existing, tanpa seed. Pengujian pembaca layar manual dan audit WCAG menyeluruh belum dilakukan. Jangan menganggap pengecekan accessibility tree sebagai pengujian screen reader nyata.

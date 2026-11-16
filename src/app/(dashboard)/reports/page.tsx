@@ -156,7 +156,14 @@ export default function ReportsPage() {
     // Clear stale results before starting the request for the new filters.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadData();
-    return () => requestRef.current?.abort();
+    const handleFilterChanged = () => {
+      void loadData();
+    };
+    window.addEventListener("academic-filter-changed", handleFilterChanged);
+    return () => {
+      requestRef.current?.abort();
+      window.removeEventListener("academic-filter-changed", handleFilterChanged);
+    };
   }, [loadData]);
 
   const avgScreenTime = reportData?.avg_screen_time

@@ -48,6 +48,14 @@ export default function DashboardPage() {
   }), []);
 
   const resources = [summary, daily, weekly, monthly, geofence, models];
+
+  useEffect(() => {
+    const handleFilterChanged = () => {
+      resources.forEach((r) => r.reload());
+    };
+    window.addEventListener("academic-filter-changed", handleFilterChanged);
+    return () => window.removeEventListener("academic-filter-changed", handleFilterChanged);
+  }, [summary, daily, weekly, monthly, geofence, models]);
   const busy = resources.some(resource => resource.pending);
   const stats = summary.data;
   const summaryStart = stats ? new Date(new Date(`${stats.date}T00:00:00Z`).getTime() - 7 * 86400000).toISOString().slice(0, 10) : null;

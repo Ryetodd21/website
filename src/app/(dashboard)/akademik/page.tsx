@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   ChevronDown,
@@ -151,6 +151,8 @@ export default function AkademikPage() {
   const [jurusanList, setJurusanList] = useState<Jurusan[]>([]);
   const [campusList, setCampusList] = useState<Campus[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterProdiMk, setFilterProdiMk] = useState<string>("all");
+  const [filterProdiJdw, setFilterProdiJdw] = useState<string>("all");
 
   const [mkDialog, setMkDialog] = useState<{ open: boolean; editing: EditableMataKuliah | null }>({
     open: false,
@@ -599,6 +601,17 @@ export default function AkademikPage() {
   const jurusansByFakultas = (fkId: string) => jurusanList.filter((j) => j.fakultas_id === fkId);
   const prodisByJurusan = (jrId: string | null) => prodiList.filter((p) => p.jurusan_id === jrId);
 
+  const filteredMataKuliah = useMemo(() => {
+    if (filterProdiMk === "all") return mataKuliah;
+    return mataKuliah.filter((m) => m.program_studi_id === filterProdiMk);
+  }, [mataKuliah, filterProdiMk]);
+
+  const filteredJadwal = useMemo(() => {
+    if (filterProdiJdw === "all") return jadwal;
+    const mkMap = new Map(mataKuliah.map((m) => [m.id, m]));
+    return jadwal.filter((j) => mkMap.get(j.mata_kuliah_id)?.program_studi_id === filterProdiJdw);
+  }, [jadwal, mataKuliah, filterProdiJdw]);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -834,10 +847,23 @@ export default function AkademikPage() {
           title={L.akademik.sectionMataKuliahTitle}
           sub={L.akademik.sectionMataKuliahSub}
           right={
-            <button type="button" className="editorial-cta" onClick={openMkNew}>
-              <Save className="h-3.5 w-3.5" />
-              {L.dialog.tambahMataKuliah}
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                aria-label="Filter prodi mata kuliah"
+                className="editorial-input h-8 text-xs py-1 px-2.5 bg-paper"
+                value={filterProdiMk}
+                onChange={(e) => setFilterProdiMk(e.target.value)}
+              >
+                <option value="all">Semua Prodi ({mataKuliah.length})</option>
+                {prodiList.map((p) => (
+                  <option key={p.id} value={p.id}>{p.code} · {p.name}</option>
+                ))}
+              </select>
+              <button type="button" className="editorial-cta" onClick={openMkNew}>
+                <Save className="h-3.5 w-3.5" />
+                {L.dialog.tambahMataKuliah}
+              </button>
+            </div>
           }
         />
         <div className="border-t border-hairline">
@@ -857,7 +883,7 @@ export default function AkademikPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mataKuliah.map((m) => (
+                {filteredMataKuliah.map((m) => (
                   <TableRow key={m.id}>
                     <TableCell className="font-mono text-[11px]">{m.code}</TableCell>
                     <TableCell>
@@ -891,10 +917,10 @@ export default function AkademikPage() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {mataKuliah.length === 0 && (
+                {filteredMataKuliah.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-6 text-sm text-ink/55">
-                      Belum ada mata kuliah.
+                      {filterProdiMk === "all" ? "Belum ada mata kuliah." : "Tidak ada mata kuliah untuk program studi ini."}
                     </TableCell>
                   </TableRow>
                 )}
@@ -911,10 +937,23 @@ export default function AkademikPage() {
           title={L.akademik.sectionJadwalTitle}
           sub={L.akademik.sectionJadwalSub}
           right={
-            <button type="button" className="editorial-cta" onClick={openJdwNew}>
-              <CalendarDays className="h-3.5 w-3.5" />
-              {L.dialog.tambahJadwal}
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                aria-label="Filter prodi jadwal mata kuliah"
+                className="editorial-input h-8 text-xs py-1 px-2.5 bg-paper"
+                value={filterProdiJdw}
+                onChange={(e) => setFilterProdiJdw(e.target.value)}
+              >
+                <option value="all">Semua Prodi ({jadwal.length})</option>
+                {prodiList.map((p) => (
+                  <option key={p.id} value={p.id}>{p.code} · {p.name}</option>
+                ))}
+              </select>
+              <button type="button" className="editorial-cta" onClick={openJdwNew}>
+                <CalendarDays className="h-3.5 w-3.5" />
+                {L.dialog.tambahJadwal}
+              </button>
+            </div>
           }
         />
         <div className="border-t border-hairline">
@@ -933,7 +972,7 @@ export default function AkademikPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {jadwal.map((j) => (
+                {filteredJadwal.map((j) => (
                   <TableRow key={j.id}>
                     <TableCell className="text-sm">{mkName(j.mata_kuliah_id)}</TableCell>
                     <TableCell className="text-sm">{dayLabel(j.day_of_week)}</TableCell>
@@ -963,10 +1002,10 @@ export default function AkademikPage() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {jadwal.length === 0 && (
+                {filteredJadwal.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-6 text-sm text-ink/55">
-                      Belum ada jadwal.
+                      {filterProdiJdw === "all" ? "Belum ada jadwal." : "Tidak ada jadwal untuk program studi ini."}
                     </TableCell>
                   </TableRow>
                 )}

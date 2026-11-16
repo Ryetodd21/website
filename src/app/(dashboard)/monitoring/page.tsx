@@ -214,7 +214,16 @@ export default function MonitoringPage() {
         // Silent: fall back to local computation if summary is unreachable.
       });
 
-    return () => ctrl.abort();
+    const handleFilterChanged = () => {
+      loadStudents();
+      getDashboardSummary(ctrl.signal).then(setSummary).catch(() => {});
+    };
+    window.addEventListener("academic-filter-changed", handleFilterChanged);
+
+    return () => {
+      ctrl.abort();
+      window.removeEventListener("academic-filter-changed", handleFilterChanged);
+    };
   }, []);
 
   useEffect(() => {

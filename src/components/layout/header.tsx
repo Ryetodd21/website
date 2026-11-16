@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { NotificationPanel } from "@/components/notifications/notification-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { CommandPalette } from "@/components/ui/command-palette";
+import { AcademicFilterBar } from "./academic-filter-bar";
 import { accountNavigation, staffNavigation } from "./navigation";
 
 export function Header() {
@@ -60,6 +61,8 @@ export function Header() {
       </div>
 
       <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+
+        {isStaff && <AcademicFilterBar />}
 
         <CommandPalette />
 

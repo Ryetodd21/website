@@ -64,6 +64,18 @@ async function refreshAccessToken(): Promise<string | null> {
 
 // ─── Core API Fetch ─────────────────────────────────────────────────────────
 
+let activeJurusanId: string | null = null;
+let activeProgramStudiId: string | null = null;
+
+export function setAcademicScopeHeaders(jurusanId: string | null, prodiId: string | null) {
+  activeJurusanId = jurusanId;
+  activeProgramStudiId = prodiId;
+}
+
+export function getAcademicScopeHeaders(): { jurusanId: string | null; prodiId: string | null } {
+  return { jurusanId: activeJurusanId, prodiId: activeProgramStudiId };
+}
+
 export async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
   const fetchOpts: RequestInit = {
     ...options,
@@ -78,15 +90,23 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
   const sig = (options as { signal?: AbortSignal }).signal;
   if (sig) fetchOpts.signal = sig;
 
-  const explicitHeaders = (options.headers as Record<string, string>) ?? {};
-  if (Object.keys(explicitHeaders).length > 0) {
-    fetchOpts.headers = {
-      "Content-Type": "application/json",
-      ...explicitHeaders,
-    };
-  } else if (!options.headers && options.method !== "GET" && options.method !== "HEAD") {
-    fetchOpts.headers = { "Content-Type": "application/json" };
+  const scopeHeaders: Record<string, string> = {};
+  const isMetaPath = path.startsWith("/api/jurusan") || path.startsWith("/api/fakultas") || path.startsWith("/api/auth");
+  if (!isMetaPath) {
+    if (activeJurusanId && activeJurusanId !== "all") {
+      scopeHeaders["x-jurusan-id"] = activeJurusanId;
+    }
+    if (activeProgramStudiId && activeProgramStudiId !== "all") {
+      scopeHeaders["x-program-studi-id"] = activeProgramStudiId;
+    }
   }
+
+  const explicitHeaders = (options.headers as Record<string, string>) ?? {};
+  fetchOpts.headers = {
+    ...(options.method !== "GET" && options.method !== "HEAD" ? { "Content-Type": "application/json" } : {}),
+    ...scopeHeaders,
+    ...explicitHeaders,
+  };
 
   let res: Response;
   try {
