@@ -27,6 +27,12 @@ const AcademicFilterContext = createContext<AcademicFilterContextType>({
   availableProdis: [],
 });
 
+/** Canonical form for comparing free-text affiliations with master rows.
+ * Legacy `users.jurusan` is free text, so spacing/case must not decide scope. */
+function normalizeAcademicName(value: string | null | undefined): string {
+  return (value ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
 export function AcademicFilterProvider({ children }: { children: React.ReactNode }) {
   const { profile } = useUserProfile();
   const [jurusanList, setJurusanList] = useState<Jurusan[]>([]);
@@ -62,28 +68,27 @@ export function AcademicFilterProvider({ children }: { children: React.ReactNode
   // For Dosen: identify matching Jurusan from profile and lock it
   const dosenMatch = useMemo(() => {
     if (!isDosen || jurusanList.length === 0) return null;
-    const aff = (profile.studyProgram || "").trim().toLowerCase();
+    const aff = normalizeAcademicName(profile.studyProgram);
     if (!aff) return null;
 
-    // Direct match against Jurusan
+    // Exact match only. Substring matching leaked across departments: the
+    // prodi code "SI" matched "Pendidikan Teknologi Informasi" because
+    // "informasi" contains "si", so a Sistem Informasi lecturer was scoped
+    // to PTI data.
     const matchedJurusan = jurusanList.find(
       (j) =>
-        j.id.toLowerCase() === aff ||
-        j.code.toLowerCase() === aff ||
-        j.name.toLowerCase() === aff ||
-        aff.includes(j.name.toLowerCase()) ||
-        j.name.toLowerCase().includes(aff)
+        normalizeAcademicName(j.id) === aff ||
+        normalizeAcademicName(j.code) === aff ||
+        normalizeAcademicName(j.name) === aff
     );
     if (matchedJurusan) return matchedJurusan;
 
     // Or match via ProgramStudi under a Jurusan
     const matchedProdi = prodiList.find(
       (p) =>
-        p.id.toLowerCase() === aff ||
-        p.code.toLowerCase() === aff ||
-        p.name.toLowerCase() === aff ||
-        aff.includes(p.name.toLowerCase()) ||
-        p.name.toLowerCase().includes(aff)
+        normalizeAcademicName(p.id) === aff ||
+        normalizeAcademicName(p.code) === aff ||
+        normalizeAcademicName(p.name) === aff
     );
     if (matchedProdi && matchedProdi.jurusan_id) {
       return jurusanList.find((j) => j.id === matchedProdi.jurusan_id) ?? null;

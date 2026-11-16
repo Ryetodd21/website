@@ -229,25 +229,6 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Round 31 follow-up: chunks are content-hashed, so `immutable` is
-        // technically correct — but in practice Firefox aggressively retains
-        // the previous build's chunk when only a tiny edit (1 line in api.ts)
-        // is rolled out, leaving users running the old PRIMARY/FALLBACK order
-        // for the full 1 year. Setting `max-age=300` (5 min) on the chunks
-        // means a deploy is picked up by the next page reload at most 5 min
-        // later, which is fine for a dashboard. The hash in the filename is
-        // still the cache-busting mechanism; this just sets a sane upper bound
-        // on how long the browser holds a stale version if Cloudflare serves
-        // the same hash from a previous build.
-        //
-        // Must come BEFORE the catch-all `/:path*` rule below — Next.js
-        // headers() processes rules in order and the FIRST match wins.
-        source: "/_next/static/chunks/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=300, must-revalidate" },
-        ],
-      },
-      {
         source: "/changelog",
         headers: [
           { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
