@@ -29,6 +29,7 @@ import { DownloadButton } from "@/components/ui/download-button";
 import { FilterChipBar } from "@/components/ui/filter-chip-bar";
 import { SortableHeader, useSort } from "@/components/ui/sortable-header";
 import { subscribeLogsStreamWebSocket, LogStreamEvent, apiFetch, RedirectError, getLogHistory } from "@/lib/api";
+import { eventInAcademicScope, useAcademicFilter } from "@/lib/academic-filter";
 import { toast } from "sonner";
 import type { Student } from "@/lib/api";
 import { LOG_STUDENT_LIMIT, LOG_HISTORY_FETCH_SIZE, LOGS_BUFFER_SIZE } from "@/lib/limits";
@@ -88,6 +89,9 @@ export default function LogsPage() {
   });
   // Read updated student names without restarting the WebSocket subscription.
   const studentMapRef = useRef<Record<string, Student>>({});
+  const { selectedJurusanId, selectedProdiId, prodiList } = useAcademicFilter();
+  const scopeRef = useRef({ selectedJurusanId, selectedProdiId, prodiList });
+  scopeRef.current = { selectedJurusanId, selectedProdiId, prodiList };
   // Round 20: dedupe SSE events by (student_id, log_date) for the live
   // table. UPSERT path means the same day fires one event per sync; we
   // keep the last-seen key set so stats counts match unique day count.
@@ -213,6 +217,9 @@ export default function LogsPage() {
         setConnected(event.event === "connected");
         return;
       }
+
+      const scope = scopeRef.current;
+      if (!eventInAcademicScope(event, scope.selectedJurusanId, scope.selectedProdiId, scope.prodiList)) return;
 
       const student = studentMapRef.current[event.student_id || ""];
       const studentName = student?.full_name || event.student_id?.slice(0, 8) || "?";

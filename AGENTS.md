@@ -210,7 +210,7 @@ Pada 2026-11-14 pengguna mengonfirmasi login nyata dan uji training sudah dilaku
 
 ## Perubahan 2026-11-16 (ponytail batch)
 
-**Login Android**: `src/lib/academic-filter.tsx` dan `src/components/layout/academic-filter-bar.tsx` adalah file baru; jangan hapus.
+**Filter akademik**: `src/lib/academic-filter.tsx` dan `src/components/layout/academic-filter-bar.tsx` adalah file baru; jangan hapus. Bukan perubahan login Android.
 
 **Filter akademik global (jurusan + prodi)** tersedia di header dashboard melalui `AcademicFilterBar`. Provider `AcademicFilterProvider` di `src/lib/academic-filter.tsx` mem-fire `CustomEvent("academic-filter-changed")` saat filter berubah. Halaman yang subscribe: dashboard, students, monitoring, reports, logs. Filter dikirim sebagai header `x-jurusan-id` / `x-program-studi-id` via `apiFetch` di `src/lib/api.ts` (module-level state `activeJurusanId`/`activeProgramStudiId`). Dosen: jurusan dikunci ke afiliasi user, hanya prodi yang bisa dipilih. Admin: bebas memilih keduanya.
 
@@ -218,7 +218,11 @@ Pada 2026-11-14 pengguna mengonfirmasi login nyata dan uji training sudah dilaku
 
 **Perubahan `api.ts`**: tambah `setAcademicScopeHeaders()`, `getAcademicScopeHeaders()`, dan auto-inject header di `apiFetch`. Path meta (`/api/jurusan`, `/api/fakultas`, `/api/auth`) tidak disertakan header filter.
 
-TypeScript 0 error (tsc --noEmit), build Turbopack — 4 error font Google Fonts (jaringan sandbox); bukan bug kode, akan resolve di environment dengan internet.
+**Perbaikan filter** (`src/lib/academic-filter.tsx`): effect kunci jurusan dosen mengirim `academic-filter-changed` setelah header terpasang, supaya halaman tidak tertahan data seluruh kampus. `eventInAcademicScope()` membuang event stream yang `program_studi_id`-nya di luar jurusan/prodi. Dipakai dashboard, monitoring, logs lewat ref agar subscription WebSocket tidak diulang. Event tanpa field tetap tampil.
+
+TypeScript 0 error (`tsc --noEmit`) setelah perbaikan. Build Turbopack lokal sebelumnya gagal 4 font Google Fonts di sandbox tanpa internet; bukan bug kode. Belum lint/browser lokal.
+
+**Deploy 2026-11-16:** image `monitorung-web:latest` `sha256:00ca3315065a…`, container healthy. Rollback `monitorung-web:rollback-20261116`. `/` dan `/login` publik 200. Stream staf production belum diuji. Android tidak ikut rilis ini.
 
 ## Batas verifikasi memory
 

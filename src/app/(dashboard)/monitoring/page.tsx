@@ -37,6 +37,7 @@ import { GlassCard, SectionHeader, MetricCard, PageHeader } from "@/components/m
 import { DownloadButton } from "@/components/ui/download-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { subscribeLogsStreamWebSocket, LogStreamEvent, apiFetch, getDashboardSummary, type DashboardSummary, type StudentListResponse } from "@/lib/api";
+import { eventInAcademicScope, useAcademicFilter } from "@/lib/academic-filter";
 import { SkeletonTable } from "@/components/ui/skeleton";
 import { MONITORING_STUDENT_LIMIT, NEW_LOG_HIGHLIGHT_MS } from "@/lib/limits";
 import { toast } from "sonner";
@@ -134,6 +135,9 @@ export default function MonitoringPage() {
   const [totalRegistered, setTotalRegistered] = useState(0);
   const [initialLoading, setInitialLoading] = useState(true);
   const studentMap = useRef<Record<string, MonitoringStudent>>({});
+  const { selectedJurusanId, selectedProdiId, prodiList } = useAcademicFilter();
+  const scopeRef = useRef({ selectedJurusanId, selectedProdiId, prodiList });
+  scopeRef.current = { selectedJurusanId, selectedProdiId, prodiList };
   const initialized = useRef(false);
 
   const { key: sortKey, dir: sortDir, toggle: toggleSort, sorted: sortedStudents } = useSort<MonitoringStudent>("lastActive", "desc");
@@ -259,6 +263,9 @@ export default function MonitoringPage() {
         setConnected(event.event === "connected");
         return;
       }
+
+      const scope = scopeRef.current;
+      if (!eventInAcademicScope(event, scope.selectedJurusanId, scope.selectedProdiId, scope.prodiList)) return;
 
       const timeStr = formatTimeNow();
       const studentId = event.student_id || "";

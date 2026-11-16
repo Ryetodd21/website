@@ -96,6 +96,11 @@ export function AcademicFilterProvider({ children }: { children: React.ReactNode
     if (isDosen && dosenMatch) {
       setSelectedJurusanState(dosenMatch.id);
       setAcademicScopeHeaders(dosenMatch.id, selectedProdiId);
+      // Header dipasang setelah fetch pertama. Tanpa event, halaman dosen
+      // tetap menampilkan seluruh kampus sampai prodi diganti.
+      window.dispatchEvent(new CustomEvent("academic-filter-changed", {
+        detail: { jurusanId: dosenMatch.id, prodiId: selectedProdiId },
+      }));
     }
   }, [isDosen, dosenMatch, selectedProdiId]);
 
@@ -143,4 +148,18 @@ export function AcademicFilterProvider({ children }: { children: React.ReactNode
 
 export function useAcademicFilter() {
   return useContext(AcademicFilterContext);
+}
+
+/** Live events carry program_studi_id. Missing field stays visible (old publisher). */
+export function eventInAcademicScope(
+  event: { program_studi_id?: string | null },
+  selectedJurusanId: string,
+  selectedProdiId: string,
+  prodiList: { id: string; jurusan_id?: string | null }[],
+): boolean {
+  if (selectedJurusanId === "all" && selectedProdiId === "all") return true;
+  const id = event.program_studi_id;
+  if (!id) return true;
+  if (selectedProdiId !== "all") return id === selectedProdiId;
+  return prodiList.some((p) => p.id === id && p.jurusan_id === selectedJurusanId);
 }

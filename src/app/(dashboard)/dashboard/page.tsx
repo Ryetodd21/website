@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Activity, ArrowRight, BrainCircuit, ChartColumn, Clock3, MapPin, MapPinOff, RefreshCw, Smartphone, Hourglass, Users } from "lucide-react";
 import { getClusterTrends, getDashboardSummary, getGeofenceSummary, getModelHistory, getScreenTimeTrends, subscribeLogsStreamWebSocket } from "@/lib/api";
+import { eventInAcademicScope, useAcademicFilter } from "@/lib/academic-filter";
 import { useUserProfile } from "@/lib/user-profile";
 import { useInstitution } from "@/lib/institution";
 import { useApiResource } from "@/hooks/use-api-resource";
@@ -32,13 +33,20 @@ export default function DashboardPage() {
   const models = useApiResource(loadModels);
   const { profile } = useUserProfile();
   const { profile: institution } = useInstitution();
+  const { selectedJurusanId, selectedProdiId, prodiList } = useAcademicFilter();
+  const scopeRef = useRef({ selectedJurusanId, selectedProdiId, prodiList });
+  scopeRef.current = { selectedJurusanId, selectedProdiId, prodiList };
   const [connected, setConnected] = useState(false);
   const [live, setLive] = useState({ logs: 0, locations: 0, time: "Belum ada pembaruan" });
 
   useEffect(() => subscribeLogsStreamWebSocket(event => {
     if (event.event === "connected" || event.event === "disconnected") {
       setConnected(event.event === "connected");
-    } else if (event.student_id && (event.type === "app_log" || event.type === "location_log")) {
+    } else if (
+      event.student_id
+      && (event.type === "app_log" || event.type === "location_log")
+      && eventInAcademicScope(event, scopeRef.current.selectedJurusanId, scopeRef.current.selectedProdiId, scopeRef.current.prodiList)
+    ) {
       setLive(previous => ({
         logs: previous.logs + (event.type === "app_log" ? 1 : 0),
         locations: previous.locations + (event.type === "location_log" ? 1 : 0),

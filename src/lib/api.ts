@@ -1058,6 +1058,7 @@ export interface LogStreamEvent {
   used_during_class?: boolean;
   is_on_campus?: boolean;
   matches_schedule?: boolean;
+  program_studi_id?: string | null;
   latitude?: number;
   longitude?: number;
   distraction_score?: number | null;
