@@ -49,7 +49,7 @@ Route dashboard di grup `(dashboard)`; nama grup bukan bagian URL. Layout bersam
 5. Response 204 → `undefined`. Error Pydantic/HTTP dinormalisasi dari `detail`; jangan anggap selalu string.
 6. `getCurrentUser()` memakai `noRedirect`, null saat gagal. Logout hanya navigasi setelah API berhasil; cache profil dibersihkan. Login sukses membersihkan cache akun sebelumnya.
 
-`AuthGuard` menangani sesi UI, `RoleGate` memeriksa role; saat role belum diketahui RoleGate boleh optimistis. Data sensitif tetap dijaga endpoint. `src/middleware.ts` memasang security headers, bukan autentikator dashboard.
+`AuthGuard` menangani sesi UI, `RoleGate` memeriksa role; saat role belum diketahui RoleGate boleh optimistis. Data sensitif tetap dijaga endpoint. `src/proxy.ts` memasang security headers, bukan autentikator dashboard. Konvensi `middleware` sudah deprecated di Next.js 16 — jangan membuat `src/middleware.ts` baru; export-nya `proxy`, `config.matcher` tetap, dan file proxy selalu jalan di runtime Node.js.
 
 `src/lib/user-profile.tsx` profil untuk header/sidebar/page. `src/lib/institution.tsx` cache lokal `institution_profile_v1`, pemetaan snake/camel, logo maks 2 MB.
 
@@ -73,7 +73,7 @@ Halaman Akademik punya filter prodi lokal per tabel Mata Kuliah dan Jadwal (`fil
 - Jangan hidupkan SSE atau `/logs/stream-auth` hanya karena dokumentasi lama menyebutnya.
 - `next.config.ts` mengekspos `NEXT_PUBLIC_API_URL` (default `http://localhost:8000`) dan rewrite `/api/:path*` → `http://api:8000/api/:path*`. Host `api` adalah DNS Docker.
 - Cookie backend Secure + SameSite=None tanpa Domain. Jangan lemahkan cookie/CORS untuk menutupi salah routing.
-- Security headers/CSP ada di `next.config.ts` dan `src/middleware.ts`; keduanya mengizinkan tile `https://*.tile.openstreetmap.org`. Jangan buka seluruh `https:` demi peta.
+- Security headers/CSP ada di `next.config.ts` dan `src/proxy.ts`; keduanya mengizinkan tile `https://*.tile.openstreetmap.org`. Jangan buka seluruh `https:` demi peta.
 
 ## Perilaku halaman
 
@@ -163,7 +163,10 @@ Smoke publik cepat: `/`, `/login`, `/privacy`, `/changelog`, `/register`, `/api/
 - HTML memakai `no-cache, no-store` pada 17 blok untuk mencegah UI basi setelah rebuild.
 - 39 `@font-face`, ~438 KB subset latin, `preload: false` + `display: swap`. Trimming butuh keputusan desain.
 - Payload gzip per route: `/` 181 KB JS + 29 CSS + 13 HTML; `/dashboard` 291/29/4 (20 chunk); `/models` 319/29/4 (23 chunk). `0cz1d0mv5g_q7.js` adalah polyfill `noModule` yang tidak diambil browser modern.
-- Origin VPS ~5 ms; keluhan lambat berasal dari RTT Cloudflare 0,3–3 s. Nginx hanya `gzip on` (tanpa brotli).
+- Origin VPS ~5 ms; keluhan lambat berasal dari RTT Cloudflare 0,3–3 s. Nginx VPS `/etc/nginx/nginx.conf` (2026-11-17) kini `gzip on` + `gzip_vary on` + `gzip_proxied any` + `gzip_comp_level 6` + `gzip_types` (JSON/JS/CSS/SVG); sebelumnya hanya `gzip on` sehingga API JSON tidak terkompresi di leg origin↔Cloudflare. Brotli **sengaja tidak dipasang** — Cloudflare sudah Brotli ke browser, jadi menambah modul di origin nyaris tanpa manfaat. Backup config: `/etc/nginx/nginx.conf.bak-*`.
+- `next.config.ts` memakai `images: { unoptimized: true }` (2026-11-17). Semua `<Image>` kecil dan sudah pas ukurannya, jadi optimizer `sharp` tidak dipanggil saat runtime. Konsekuensi: gambar besar baru harus dioptimasi manual sebelum dipakai.
+- `src/app/layout.tsx` menetapkan `metadataBase` dari `NEXT_PUBLIC_SITE_URL` (default `https://monitorterop.my.id`). Tanpa itu aset OG di-resolve ke `localhost:3000` saat build dan muncul warning.
+- `src/app/opengraph-image.tsx` dirender statis saat build (○), bukan `runtime = "edge"`. Renderer `next/og`/satori **tidak mendukung warna `oklch()`** — build gagal `Unexpected token type: function` jika dipakai. Pakai hex/rgba di file itu.
 
 ## Deploy
 
@@ -176,7 +179,7 @@ docker compose --env-file .env.production -f docker-compose.yml -f compose.vps.y
 
 Saat mengubah aset di `public/`, verifikasi ukuran **di dalam container** (`docker exec monitorung-web ls -l public/<file>`), bukan hanya di host — pernah terjadi rsync mendarat di direktori salah sehingga image dibangun dari aset lama.
 
-Status 2026-11-17: `monitorung-web:latest` `sha256:d5875b2048…`, container healthy, `/` dan `/login` 200. **Tidak ada backup/rollback image tersisa**; rollback hanya lewat rebuild.
+Status 2026-11-17 (deploy migrasi proxy, setelah optimalisasi RAM): `monitorung-web:latest` `sha256:56f0bbb35f09…`, container healthy, `/`, `/login`, `/opengraph-image` 200. Rollback di VPS: `monitorung-web:pre-proxy` `sha256:03a6d862e517…` dan `monitorung-web:rollback` `sha256:d5875b2048…`; rollback lewat `docker tag` + `up -d --no-deps --wait web`. API pasangannya `monitorung-api:latest` `sha256:2ba98c96055a…`. Build web bersih: warning `middleware deprecated` dan `Edge Runtime deprecated` hilang setelah migrasi ke `src/proxy.ts` + penghapusan `runtime = "edge"` di OG image; warning `Custom Cache-Control headers` tetap ada dan disengaja.
 
 ## Batas verifikasi
 

@@ -137,7 +137,9 @@ export default function MonitoringPage() {
   const studentMap = useRef<Record<string, MonitoringStudent>>({});
   const { selectedJurusanId, selectedProdiId, prodiList } = useAcademicFilter();
   const scopeRef = useRef({ selectedJurusanId, selectedProdiId, prodiList });
-  scopeRef.current = { selectedJurusanId, selectedProdiId, prodiList };
+  useEffect(() => {
+    scopeRef.current = { selectedJurusanId, selectedProdiId, prodiList };
+  }, [selectedJurusanId, selectedProdiId, prodiList]);
   const initialized = useRef(false);
 
   const { key: sortKey, dir: sortDir, toggle: toggleSort, sorted: sortedStudents } = useSort<MonitoringStudent>("lastActive", "desc");

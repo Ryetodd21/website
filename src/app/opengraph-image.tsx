@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
 export const alt = "Monitor UNG, Sistem Monitoring Real-Time Mahasiswa";
 export const contentType = "image/png";
 export const size = { width: 1200, height: 630 };
@@ -12,7 +11,7 @@ export default function OpenGraphImage() {
         style={{
           width: "100%",
           height: "100%",
-          background: "oklch(0.985 0.005 80)",
+          background: "#fbf9f5",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
@@ -43,7 +42,7 @@ export default function OpenGraphImage() {
             style={{
               display: "flex",
               fontSize: 84,
-              color: "oklch(0.18 0.01 260)",
+              color: "#1c1d22",
               letterSpacing: "-3%",
               lineHeight: 0.95,
               fontWeight: 800,
@@ -56,7 +55,7 @@ export default function OpenGraphImage() {
             style={{
               display: "flex",
               fontSize: 26,
-              color: "oklch(0.18 0.01 260 / 0.6)",
+              color: "rgba(28, 29, 34, 0.6)",
               maxWidth: 880,
               marginTop: 8,
               lineHeight: 1.3,
@@ -80,7 +79,7 @@ export default function OpenGraphImage() {
               flexDirection: "column",
               gap: 6,
               fontSize: 18,
-              color: "oklch(0.18 0.01 260 / 0.55)",
+              color: "rgba(28, 29, 34, 0.55)",
             }}
           >
             <div style={{ display: "flex" }}>Universitas Negeri Gorontalo</div>
@@ -104,7 +103,7 @@ export default function OpenGraphImage() {
                 width: 8,
                 height: 8,
                 borderRadius: 999,
-                background: "oklch(0.577 0.245 27.325)",
+                background: "#e7000b",
               }}
             />
             v0.28.0

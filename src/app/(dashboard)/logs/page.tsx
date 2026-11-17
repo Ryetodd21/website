@@ -91,7 +91,9 @@ export default function LogsPage() {
   const studentMapRef = useRef<Record<string, Student>>({});
   const { selectedJurusanId, selectedProdiId, prodiList } = useAcademicFilter();
   const scopeRef = useRef({ selectedJurusanId, selectedProdiId, prodiList });
-  scopeRef.current = { selectedJurusanId, selectedProdiId, prodiList };
+  useEffect(() => {
+    scopeRef.current = { selectedJurusanId, selectedProdiId, prodiList };
+  }, [selectedJurusanId, selectedProdiId, prodiList]);
   // Round 20: dedupe SSE events by (student_id, log_date) for the live
   // table. UPSERT path means the same day fires one event per sync; we
   // keep the last-seen key set so stats counts match unique day count.

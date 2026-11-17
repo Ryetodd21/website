@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useAcademicFilter } from "@/lib/academic-filter";
-import { GraduationCap, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 
 export function AcademicFilterBar() {
   const {

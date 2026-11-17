@@ -37,7 +37,7 @@ export function AcademicFilterProvider({ children }: { children: React.ReactNode
   const { profile } = useUserProfile();
   const [jurusanList, setJurusanList] = useState<Jurusan[]>([]);
   const [prodiList, setProdiList] = useState<ProgramStudi[]>([]);
-  const [selectedJurusanId, setSelectedJurusanState] = useState<string>("all");
+  const [jurusanState, setSelectedJurusanState] = useState<string>("all");
   const [selectedProdiId, setSelectedProdiState] = useState<string>("all");
 
   const isDosen = profile.role.toLowerCase().trim() === "dosen";
@@ -97,16 +97,18 @@ export function AcademicFilterProvider({ children }: { children: React.ReactNode
     return null;
   }, [isDosen, jurusanList, prodiList, profile.studyProgram]);
 
+  // Dosen: jurusan diturunkan dari profil, bukan disimpan di state — menulis
+  // state di dalam effect memicu cascading render.
+  const selectedJurusanId = isDosen && dosenMatch ? dosenMatch.id : jurusanState;
+
   useEffect(() => {
-    if (isDosen && dosenMatch) {
-      setSelectedJurusanState(dosenMatch.id);
-      setAcademicScopeHeaders(dosenMatch.id, selectedProdiId);
-      // Header dipasang setelah fetch pertama. Tanpa event, halaman dosen
-      // tetap menampilkan seluruh kampus sampai prodi diganti.
-      window.dispatchEvent(new CustomEvent("academic-filter-changed", {
-        detail: { jurusanId: dosenMatch.id, prodiId: selectedProdiId },
-      }));
-    }
+    if (!isDosen || !dosenMatch) return;
+    setAcademicScopeHeaders(dosenMatch.id, selectedProdiId);
+    // Header dipasang setelah fetch pertama. Tanpa event, halaman dosen
+    // tetap menampilkan seluruh kampus sampai prodi diganti.
+    window.dispatchEvent(new CustomEvent("academic-filter-changed", {
+      detail: { jurusanId: dosenMatch.id, prodiId: selectedProdiId },
+    }));
   }, [isDosen, dosenMatch, selectedProdiId]);
 
   const setJurusanId = useCallback((id: string) => {

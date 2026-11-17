@@ -1,23 +1,20 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PREFIXES = [
-  "/login",
-  "/register",
-  "/_next",
-  "/favicon",
-];
-
-// Round 26 audit (P1): security headers added via middleware because the
+// Round 26 audit (P1): security headers added via proxy because the
 // `headers()` block in next.config.ts only applies to dynamic SSR routes.
 // Static prerendered pages (which the public landing/login/register are)
 // are served directly from the .next prerender cache and skip the
-// headers() callback entirely. Middleware runs for every matched request
+// headers() callback entirely. Proxy runs for every matched request
 // before any response — including the static ones — so this is the
 // reliable place to enforce CSP, HSTS, X-Frame-Options, etc.
 //
-// The previous next.config.ts `/:path*` rule is kept as a defense in
-// depth for dynamic routes (the (dashboard) subtree, /api/* rewrites).
+// Next.js 16: the `middleware` file convention is deprecated in favour of
+// `proxy`. Same API (`config.matcher` unchanged), but proxy always runs on
+// the Node.js runtime, so the Edge Runtime warning from this file is gone.
+//
+// The next.config.ts `/:path*` rule is kept as a defense in depth for
+// dynamic routes (the (dashboard) subtree, /api/* rewrites).
 const SECURITY_HEADERS: Record<string, string> = {
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
   "X-Content-Type-Options": "nosniff",
@@ -57,21 +54,16 @@ const SECURITY_HEADERS: Record<string, string> = {
   ].join("; "),
 };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public routes and Next.js internals
-  if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) {
-    return applySecurityHeaders(NextResponse.next());
-  }
-
-  // Allow paths with extensions (static assets)
+  // Static assets (anything with a file extension) are served without CSP.
+  // Auth is handled by the client-side AuthGuard — the proxy cannot read the
+  // HttpOnly cookie set by the FastAPI backend.
   if (pathname.includes(".")) {
     return NextResponse.next();
   }
 
-  // Auth is handled by client-side AuthGuard component
-  // (server-side middleware cannot access browser HttpOnly cookies from FastAPI backend)
   return applySecurityHeaders(NextResponse.next());
 }
 

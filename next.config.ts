@@ -6,10 +6,10 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
   },
+  // Semua <Image> di sini berukuran kecil & sudah pas (logo 40px, avatar 240/56).
+  // unoptimized membuang proses sharp dari node server.js — hemat RAM container.
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "avatars.githubusercontent.com" },
-    ],
+    unoptimized: true,
   },
   // Round 27 (P1 routing): Next.js standalone tidak serve /api/*. Browser
   // call ke https://monitorterop.my.id/api/auth/login → Cloudflare tunnel

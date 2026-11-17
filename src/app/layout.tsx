@@ -58,6 +58,10 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
+  // Tanpa metadataBase, URL aset OG (termasuk /opengraph-image) di-resolve ke
+  // http://localhost:3000 saat build. Pakai domain publik agar kartu share
+  // social menunjuk ke aset yang benar; bisa ditimpa lewat env bila perlu.
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://monitorterop.my.id"),
   title: "Monitor UNG · Sistem Monitoring Distraksi Belajar",
   description: "Dashboard monitoring distraksi belajar mahasiswa berbasis PCA & K-Means",
   icons: {

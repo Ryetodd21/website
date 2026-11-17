@@ -35,7 +35,9 @@ export default function DashboardPage() {
   const { profile: institution } = useInstitution();
   const { selectedJurusanId, selectedProdiId, prodiList } = useAcademicFilter();
   const scopeRef = useRef({ selectedJurusanId, selectedProdiId, prodiList });
-  scopeRef.current = { selectedJurusanId, selectedProdiId, prodiList };
+  useEffect(() => {
+    scopeRef.current = { selectedJurusanId, selectedProdiId, prodiList };
+  }, [selectedJurusanId, selectedProdiId, prodiList]);
   const [connected, setConnected] = useState(false);
   const [live, setLive] = useState({ logs: 0, locations: 0, time: "Belum ada pembaruan" });
 
@@ -59,7 +61,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const handleFilterChanged = () => {
-      resources.forEach((r) => r.reload());
+      [summary, daily, weekly, monthly, geofence, models].forEach((r) => r.reload());
     };
     window.addEventListener("academic-filter-changed", handleFilterChanged);
     return () => window.removeEventListener("academic-filter-changed", handleFilterChanged);

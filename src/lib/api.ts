@@ -1024,7 +1024,8 @@ export function subscribeLogsStreamWebSocket(
     current.onmessage = (event) => {
       let data: LogStreamEvent;
       try { data = JSON.parse(event.data) as LogStreamEvent; } catch { return; }
-      if (data.event !== "connected") onMessage(data);
+      // "ping" is a server-side liveness heartbeat, not a log event.
+      if (data.event !== "connected" && data.event !== "ping") onMessage(data);
     };
     current.onclose = () => {
       if (socket !== current || closed) return;
