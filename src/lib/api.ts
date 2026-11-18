@@ -1073,8 +1073,36 @@ export interface LogStreamEvent {
   message?: string;
 }
 
-export function getLogHistory(limit = 100, signal?: AbortSignal) {
-  return apiFetch<LogStreamEvent[]>(`/api/logs/history?limit=${limit}`, { signal });
+// /api/logs/history returns { items, total, limit, offset } with
+// type "app_usage" | "location". Normalize back to LogStreamEvent[] so the
+// /logs page keeps one shape for history and SSE events.
+interface LogHistoryItem {
+  type: "app_usage" | "location";
+  student_id: string;
+  student_name?: string;
+  nim?: string;
+  log_date?: string;
+  recorded_at?: string;
+  total_screen_time_minutes?: number;
+  social_media_time_minutes?: number;
+  game_time_minutes?: number;
+  unlock_count?: number;
+  used_during_class?: boolean;
+  is_on_campus?: boolean;
+  matches_schedule?: boolean;
+  campus_id?: string | null;
+  geofence_status?: string | null;
+}
+
+export async function getLogHistory(limit = 100, signal?: AbortSignal) {
+  const res = await apiFetch<{ items: LogHistoryItem[] }>(
+    `/api/logs/history?limit=${limit}`,
+    { signal },
+  );
+  return (res.items ?? []).map((it): LogStreamEvent => ({
+    ...it,
+    type: it.type === "location" ? "location_log" : "app_log",
+  }));
 }
 
 export interface GeofenceSummary {

@@ -16,7 +16,9 @@ Terakhir dicocokkan: 2026-11-17. Berlaku untuk `/home/terio-op/website`. Baca ju
 
 Halaman publik plus dashboard staf untuk membaca distraksi belajar, mengelola akademik dan institusi, memantau log, melatih/membaca model, laporan, dan AI Analisis. Mahasiswa memakai Android untuk pengumpulan aktivitas.
 
-Next.js 16.3.5 App Router, React 19.2.8, TypeScript 5, Tailwind 4, ESLint 9. UI memakai shadcn `base-nova` dengan `@base-ui/react` — **bukan** semua primitive Radix. Juga: lucide-react, Recharts 3, Leaflet 1.9, Sonner, react-markdown/remark-gfm, CVA, tw-animate-css. Gunakan dependency terpasang; jangan tambah library UI untuk pola yang sudah ada.
+Next.js 16.4.6 App Router, React 19.2.8, TypeScript 5, Tailwind 4, ESLint 9. UI memakai shadcn `base-nova` dengan `@base-ui/react` — **bukan** semua primitive Radix. Juga: lucide-react, Recharts 3, Leaflet 1.9, Sonner, react-markdown/remark-gfm, CVA, tw-animate-css. Gunakan dependency terpasang; jangan tambah library UI untuk pola yang sudah ada.
+
+CI: `.github/workflows/ci.yml` — `npm ci --legacy-peer-deps`, `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm audit --omit=dev --audit-level=high`, Trivy fs, SBOM CycloneDX. `shadcn` ada di `devDependencies` (hanya dipakai `@import "shadcn/tailwind.css"` di globals.css); jangan pindahkan balik ke dependencies — rantai `ts-morph`/`minimatch`-nya dev-only.
 
 Alias `@/*` → `src/*`. Output `standalone`. Lockfile npm. `README.md` masih template create-next-app, bukan dokumentasi arsitektur.
 

@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Web — lint, typecheck, build, SBOM, scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci --legacy-peer-deps
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+
+      # Production dependency tree only. Dev-only findings (shadcn/ts-morph →
+      # minimatch, moderate) cannot reach the runtime image, which installs
+      # with --omit=dev via the standalone output.
+      - name: Audit production deps
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: SBOM (CycloneDX)
+        uses: anchore/sbom-action@v0.24.3
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom-web.cdx.json
+          artifact-name: sbom-web
+          upload-artifact: true
+
+      - name: Vulnerability scan (Trivy)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          skip-dirs: node_modules,.next
+          exit-code: "1"
