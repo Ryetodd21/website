@@ -20,12 +20,12 @@ export function AcademicFilterBar() {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex w-full min-w-0 items-center gap-2">
       {/* Jurusan dropdown / locked badge */}
       {isJurusanLocked ? (
         <div
           title="Tampilan dibatasi pada jurusan Anda"
-          className="flex h-8 items-center gap-1.5 rounded border border-hairline bg-muted/60 px-2.5 text-xs font-medium text-ink"
+          className="flex h-8 min-w-0 flex-1 items-center gap-1.5 rounded border border-hairline bg-muted/60 px-2.5 text-xs font-medium text-ink sm:flex-none"
         >
           <Lock className="size-3 text-ink/60" aria-hidden="true" />
           <span className="max-w-[140px] truncate sm:max-w-[180px]">
@@ -33,12 +33,12 @@ export function AcademicFilterBar() {
           </span>
         </div>
       ) : (
-        <div className="relative">
+        <div className="relative min-w-0 flex-1 sm:flex-none">
           <select
             aria-label="Filter Jurusan"
             value={selectedJurusanId}
             onChange={(e) => setJurusanId(e.target.value)}
-            className="editorial-input h-8 max-w-[140px] truncate py-1 pl-2.5 pr-6 text-xs sm:max-w-[170px]"
+            className="editorial-input h-8 w-full truncate py-1 pl-2.5 pr-6 text-xs sm:max-w-[170px]"
           >
             <option value="all">Semua Jurusan</option>
             {jurusanList.map((j) => (
@@ -51,12 +51,12 @@ export function AcademicFilterBar() {
       )}
 
       {/* Program Studi dropdown */}
-      <div className="relative">
+      <div className="relative min-w-0 flex-1 sm:flex-none">
         <select
           aria-label="Filter Program Studi"
           value={selectedProdiId}
           onChange={(e) => setProdiId(e.target.value)}
-          className="editorial-input h-8 max-w-[130px] truncate py-1 pl-2.5 pr-6 text-xs sm:max-w-[170px]"
+          className="editorial-input h-8 w-full truncate py-1 pl-2.5 pr-6 text-xs sm:max-w-[170px]"
         >
           <option value="all">Semua Prodi</option>
           {availableProdis.map((p) => (

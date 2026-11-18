@@ -520,6 +520,34 @@ export async function getMyScheduleRequests(signal?: AbortSignal): Promise<{
   );
 }
 
+export async function getScheduleRequests(
+  params: { status?: string; limit?: number; offset?: number } = {},
+  signal?: AbortSignal
+): Promise<{ requests: ScheduleRequest[]; total: number }> {
+  const sp = new URLSearchParams();
+  if (params.status) sp.set("status", params.status);
+  if (params.limit != null) sp.set("limit", String(params.limit));
+  if (params.offset != null) sp.set("offset", String(params.offset));
+  const qs = sp.toString();
+  return apiFetch<{ requests: ScheduleRequest[]; total: number }>(
+    `/api/schedule-requests${qs ? "?" + qs : ""}`,
+    { signal }
+  );
+}
+
+export async function reviewScheduleRequest(
+  id: string,
+  action: "approve" | "reject",
+  admin_notes: string = "",
+  signal?: AbortSignal
+): Promise<ScheduleRequest> {
+  return apiFetch<ScheduleRequest>(`/api/schedule-requests/${id}/${action}`, {
+    method: "POST",
+    body: JSON.stringify({ admin_notes }),
+    signal,
+  });
+}
+
 // ─── Campuses ────────────────────────────────────────────────────────────────
 
 export interface Campus {

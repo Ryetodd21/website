@@ -52,7 +52,9 @@ import {
   getProgramStudi,
   getCampuses,
   getRequestAkademik,
+  getScheduleRequests,
   reviewRequestAkademik,
+  reviewScheduleRequest,
   updateFakultas,
   updateJadwalMataKuliah,
   updateJurusan,
@@ -68,6 +70,7 @@ import {
   type ProgramStudi,
   type RequestAkademik,
   type RequestAkademikStatus,
+  type ScheduleRequest,
   type RequestAkademikType,
 } from "@/lib/api";
 import { t as L } from "@/lib/i18n";
@@ -146,6 +149,7 @@ export default function AkademikPage() {
   const [mataKuliah, setMataKuliah] = useState<MataKuliah[]>([]);
   const [jadwal, setJadwal] = useState<JadwalMataKuliah[]>([]);
   const [requests, setRequests] = useState<RequestAkademik[]>([]);
+  const [schedRequests, setSchedRequests] = useState<ScheduleRequest[]>([]);
   const [prodiList, setProdiList] = useState<ProgramStudi[]>([]);
   const [fakultasList, setFakultasList] = useState<Fakultas[]>([]);
   const [jurusanList, setJurusanList] = useState<Jurusan[]>([]);
@@ -198,10 +202,11 @@ export default function AkademikPage() {
   async function refreshAll(signal?: AbortSignal) {
     setLoading(true);
     try {
-      const [mk, jdw, req, prodi, fk, jr, campuses] = await Promise.all([
+      const [mk, jdw, req, sreq, prodi, fk, jr, campuses] = await Promise.all([
         getMataKuliah({ include_inactive: true }, signal),
         getJadwalMataKuliah({ include_inactive: true }, signal),
         getRequestAkademik({}, signal),
+        getScheduleRequests({}, signal),
         getProgramStudi({ signal }).catch(() => []),
         getFakultas(true, signal).catch(() => []),
         getJurusan({ includeInactive: true, signal }).catch(() => []),
@@ -210,6 +215,7 @@ export default function AkademikPage() {
       setMataKuliah(mk);
       setJadwal(jdw);
       setRequests(req);
+      setSchedRequests(sreq.requests);
       setProdiList(prodi);
       setFakultasList(fk);
       setJurusanList(jr);
@@ -594,6 +600,22 @@ export default function AkademikPage() {
     }
   }
 
+  async function reviewSched(req: ScheduleRequest, action: "approve" | "reject") {
+    const notes = prompt(
+      action === "approve" ? "Catatan persetujuan (opsional):" : "Alasan penolakan:",
+      ""
+    );
+    if (notes === null) return;
+    try {
+      const updated = await reviewScheduleRequest(req.id, action, notes);
+      setSchedRequests((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      toast.success(action === "approve" ? "Jadwal disetujui dan dibuat" : "Request jadwal ditolak");
+    } catch (err) {
+      toast.error(`Gagal memperbarui: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  const pendingSchedCount = schedRequests.filter((r) => r.status === "pending").length;
   const pendingCount = requests.filter((r) => r.status === "pending").length;
   const prodiOptions = prodiList.filter((p) => p.is_active);
   const campusOptions = campusList.filter((c) => c.is_active);
@@ -1098,6 +1120,85 @@ export default function AkademikPage() {
                   <TableRow>
                     <TableCell colSpan={4} className="text-center py-6 text-sm text-ink/55">
                       Antrian kosong.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      </GlassCard>
+
+      {/* Request Jadwal dari aplikasi mahasiswa */}
+      <GlassCard>
+        <SectionHeader
+          number="05"
+          title="Request Jadwal Mahasiswa"
+          sub="Pengajuan jadwal yang dikirim dari aplikasi Android. Setujui untuk membuat baris jadwal mahasiswa."
+          right={
+            <StatusBadge
+              type={pendingSchedCount > 0 ? "warning" : "completed"}
+              label={pendingSchedCount > 0 ? `${pendingSchedCount} menunggu` : "Tidak ada antrian"}
+            />
+          }
+        />
+        <div className="border-t border-hairline">
+          {loading ? (
+            <div className="px-5 py-8 text-center text-sm text-ink/55">Memuat request jadwal...</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="eyebrow-sm">Mahasiswa</TableHead>
+                  <TableHead className="eyebrow-sm">Mata Kuliah</TableHead>
+                  <TableHead className="eyebrow-sm">Waktu</TableHead>
+                  <TableHead className="eyebrow-sm">Status</TableHead>
+                  <TableHead className="eyebrow-sm text-right">{L.label.aksi}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {schedRequests.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="text-sm text-ink">
+                      {r.student_name ?? r.student_id ?? "-"}
+                    </TableCell>
+                    <TableCell className="text-sm text-ink">
+                      {r.subject_name ?? r.subject_name_raw ?? "-"}
+                      {r.room && <div className="text-[10px] text-ink/55 mt-0.5">Ruang {r.room}</div>}
+                    </TableCell>
+                    <TableCell className="text-sm text-ink/75">
+                      {r.day_of_week ? dayLabel(r.day_of_week) : "-"}
+                      {r.start_time && r.end_time && ` · ${r.start_time}-${r.end_time}`}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge type={REQUEST_STATUS_TONE[r.status as RequestAkademikStatus] ?? "warning"} label={REQUEST_STATUS_LABEL[r.status as RequestAkademikStatus] ?? r.status} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {r.status === "pending" && (
+                        <div className="flex justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => void reviewSched(r, "approve")}
+                            className="editorial-ghost text-[11px] text-success"
+                          >
+                            Setujui
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void reviewSched(r, "reject")}
+                            className="editorial-ghost text-[11px] text-destructive"
+                          >
+                            Tolak
+                          </button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {schedRequests.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-6 text-sm text-ink/55">
+                      Belum ada request jadwal dari aplikasi.
                     </TableCell>
                   </TableRow>
                 )}

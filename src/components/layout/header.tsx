@@ -38,86 +38,101 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-20 shrink-0 items-center justify-between gap-2 border-b border-hairline bg-paper/95 px-3 backdrop-blur-sm sm:px-6">
+    <header className="sticky top-0 z-30 shrink-0 border-b border-hairline bg-paper/95 backdrop-blur-sm">
 
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="flex h-16 items-center justify-between gap-2 px-3 sm:h-20 sm:px-6">
 
-        <SidebarTrigger aria-label="Buka navigasi" className="size-11 md:hidden">
-          <Menu className="size-5" aria-hidden="true" />
-        </SidebarTrigger>
+        <div className="flex min-w-0 items-center gap-3">
 
-        <div className="hidden min-w-0 sm:block">
+          <SidebarTrigger aria-label="Buka navigasi" className="size-11 md:hidden">
+            <Menu className="size-5" aria-hidden="true" />
+          </SidebarTrigger>
 
-          <p className="text-xs font-medium text-muted-foreground">Ruang kerja staf</p>
+          <div className="hidden min-w-0 sm:block">
 
-          <p className="truncate text-base font-semibold text-ink">
+            <p className="text-xs font-medium text-muted-foreground">Ruang kerja staf</p>
+
+            <p className="truncate text-base font-semibold text-ink">
+              {title}
+            </p>
+          </div>
+
+          <span className="min-w-0 truncate text-sm font-semibold text-ink sm:hidden">
             {title}
-          </p>
+          </span>
         </div>
 
-        <span className="truncate text-sm font-semibold text-ink sm:hidden">
-          {title}
-        </span>
-      </div>
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
 
-      <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-
-        {isStaff && <AcademicFilterBar />}
-
-        <CommandPalette />
-
-        <ThemeToggle compact />
-
-        <NotificationPanel />
-
-        <DropdownMenu>
-
-          <DropdownMenuTrigger render={<button
-            type="button"
-            aria-label="Buka menu akun"
-            className="flex min-h-11 items-center gap-2 rounded-lg p-1.5 hover:bg-muted"
-          >
-
-            <Avatar className="size-8">
-
-              {profile.avatarUrl && <AvatarImage src={profile.avatarUrl} alt="" />}
-
-              <AvatarFallback className="bg-primary/10 text-sm font-semibold text-ink">
-                {getInitials(profile.fullName)}
-              </AvatarFallback>
-            </Avatar>
-
-            <span className="hidden max-w-32 truncate text-sm font-medium lg:block">
-              {profile.fullName}
-            </span>
-
-            <ChevronDown className="hidden size-4 sm:block" aria-hidden="true" />
-          </button>} />
-
-          <DropdownMenuContent align="end" className="w-64 bg-card p-2">
-
-            <div className="mb-2 border-b border-hairline px-3 py-3">
-
-              <p className="truncate font-semibold">
-                {profile.fullName}
-              </p>
-
-              <p className="truncate text-sm text-muted-foreground">
-                {profile.email}
-              </p>
+          {isStaff && (
+            <div className="hidden sm:block">
+              <AcademicFilterBar />
             </div>
+          )}
 
-            <DropdownMenuItem render={<Link href="/profile" />} className="min-h-11 gap-3"><UserRound aria-hidden="true" />Akun Saya</DropdownMenuItem>
+          <CommandPalette />
 
-            {isStaff && <DropdownMenuItem render={<Link href="/settings" prefetch={false} />} className="min-h-11 gap-3"><Settings aria-hidden="true" />Pengaturan</DropdownMenuItem>}
+          <ThemeToggle compact />
 
-            <DropdownMenuItem disabled={loggingOut} onClick={handleLogout} className="min-h-11 gap-3 text-destructive">
-              <LogOut aria-hidden="true" />
-              {loggingOut ? "Sedang keluar..." : "Keluar"}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          <NotificationPanel />
+
+          <DropdownMenu>
+
+            <DropdownMenuTrigger render={<button
+              type="button"
+              aria-label="Buka menu akun"
+              className="flex min-h-11 items-center gap-2 rounded-lg p-1.5 hover:bg-muted"
+            >
+
+              <Avatar className="size-8">
+
+                {profile.avatarUrl && <AvatarImage src={profile.avatarUrl} alt="" />}
+
+                <AvatarFallback className="bg-primary/10 text-sm font-semibold text-ink">
+                  {getInitials(profile.fullName)}
+                </AvatarFallback>
+              </Avatar>
+
+              <span className="hidden max-w-32 truncate text-sm font-medium lg:block">
+                {profile.fullName}
+              </span>
+
+              <ChevronDown className="hidden size-4 sm:block" aria-hidden="true" />
+            </button>} />
+
+            <DropdownMenuContent align="end" className="w-64 bg-card p-2">
+
+              <div className="mb-2 border-b border-hairline px-3 py-3">
+
+                <p className="truncate font-semibold">
+                  {profile.fullName}
+                </p>
+
+                <p className="truncate text-sm text-muted-foreground">
+                  {profile.email}
+                </p>
+              </div>
+
+              <DropdownMenuItem render={<Link href="/profile" />} className="min-h-11 gap-3"><UserRound aria-hidden="true" />Akun Saya</DropdownMenuItem>
+
+              {isStaff && <DropdownMenuItem render={<Link href="/settings" prefetch={false} />} className="min-h-11 gap-3"><Settings aria-hidden="true" />Pengaturan</DropdownMenuItem>}
+
+              <DropdownMenuItem disabled={loggingOut} onClick={handleLogout} className="min-h-11 gap-3 text-destructive">
+                <LogOut aria-hidden="true" />
+                {loggingOut ? "Sedang keluar..." : "Keluar"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
+
+      {/* Mobile: filter akademik turun ke baris sendiri supaya judul halaman
+          dan tombol aksi tidak saling menghimpit di layar sempit. */}
+      {isStaff && (
+        <div className="border-t border-hairline px-3 py-2 sm:hidden">
+          <AcademicFilterBar />
+        </div>
+      )}
     </header>
   );
 }
