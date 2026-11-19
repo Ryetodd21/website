@@ -5,8 +5,8 @@ Halaman publik dan dashboard staf untuk **Sistem Monitoring Distraksi Belajar Ma
 Website ini membaca data yang dikirim aplikasi Android (screen time, unlock, lokasi kampus) lewat API FastAPI, lalu menampilkannya sebagai metrik, log, laporan, dan hasil klaster PCA + K-Means. Mahasiswa memakai aplikasi Android; dosen dan admin memakai website.
 
 - Production: <https://monitorterop.my.id>
-- Backend: `../server/` (FastAPI, port 8000)
-- Android: `../monitor-ung-app/`
+- Backend: `../server/` (FastAPI, port 8000) <https://github.com/Ryetodd21/server>
+- Android: `../monitor-ung-app/` <https://github.com/Ryetodd21/monitor-ung-app>
 
 ## Stack
 
